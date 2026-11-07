@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarClock, ClipboardList, Pill } from 'lucide-react'
+import { CalendarClock, ClipboardList, Pill } from 'lucide-react'
 import {
   DOSE_UNITS,
   GALENIC_FORMS,
@@ -7,6 +7,7 @@ import {
   type MedicationEntryRecord,
 } from '../model/medicationEntry'
 import { useMedicationEntryPageViewModel } from '../hooks/useMedicationEntryPageViewModel'
+import MedicationPageHeader from '../components/MedicationPageHeader'
 import RecentMedicationEntryAlert from '../components/RecentMedicationEntryAlert'
 
 interface MedicationEntryPageProps {
@@ -43,37 +44,15 @@ function MedicationEntryPage({
 
   return (
     <main className="min-h-svh bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6 sm:py-5">
-          <button
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg px-2 font-medium text-zenmed-blue transition-colors hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zenmed-blue"
-            onClick={handleCancel}
-            type="button"
-          >
-            <ArrowLeft aria-hidden="true" size={18} />
-            Retour au journal
-          </button>
-          <div className="mt-4 flex items-center gap-3">
-            <img
-              alt=""
-              className="size-12 shrink-0 rounded-xl"
-              height={48}
-              src="/icons/icon-192.png"
-              width={48}
-            />
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-                {pageTitle}
-              </h1>
-              <p className="mt-1 text-sm text-slate-600">
-                {entry
-                  ? 'Modifiez les informations de cette prise.'
-                  : 'Ajoutez les informations de votre prise.'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <MedicationPageHeader
+        onBack={handleCancel}
+        subtitle={
+          entry
+            ? 'Modifiez les informations de cette prise.'
+            : 'Ajoutez les informations de votre prise.'
+        }
+        title={pageTitle}
+      />
 
       <section
         aria-labelledby="add-medication-entry-title"
