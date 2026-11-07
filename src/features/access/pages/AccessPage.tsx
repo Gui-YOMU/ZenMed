@@ -32,7 +32,7 @@ function AccessPage({ children }: { children?: ReactNode }) {
           alt=""
           className="mb-5 size-20 rounded-2xl"
           height={80}
-          src="/icons/icon-192.png"
+          src={`${import.meta.env.BASE_URL}icons/icon-192.png`}
           width={80}
         />
         <h1 className="text-3xl font-semibold tracking-tight text-zenmed-blue">
