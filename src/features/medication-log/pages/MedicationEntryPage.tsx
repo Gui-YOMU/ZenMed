@@ -2,16 +2,19 @@ import {
   DOSE_UNITS,
   GALENIC_FORMS,
   type MedicationEntry,
+  type MedicationEntryRecord,
 } from '../model/medicationEntry.types'
 import { useMedicationEntryPageViewModel } from '../hooks/useMedicationEntryPageViewModel'
 import RecentMedicationEntryAlert from '../components/RecentMedicationEntryAlert'
 
 interface MedicationEntryPageProps {
+  entry?: MedicationEntryRecord
   onCancel: () => void
   onSaved: (entry: MedicationEntry) => Promise<void>
 }
 
 function MedicationEntryPage({
+  entry,
   onCancel,
   onSaved,
 }: MedicationEntryPageProps) {
@@ -21,11 +24,17 @@ function MedicationEntryPage({
     submitError,
     pendingEntry,
     isSaving,
+    pageTitle,
+    submitLabel,
     onCancel: handleCancel,
     handleSubmit,
     confirmSave,
     cancelPendingSave,
-  } = useMedicationEntryPageViewModel({ onCancel, onSaved })
+  } = useMedicationEntryPageViewModel({
+    existingEntry: entry,
+    onCancel,
+    onSaved,
+  })
 
   return (
     <main className="min-h-svh bg-slate-50 text-slate-900">
@@ -38,9 +47,7 @@ function MedicationEntryPage({
           >
             Retour au journal
           </button>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight">
-            Ajouter une prise
-          </h1>
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight">{pageTitle}</h1>
         </div>
       </header>
 
@@ -155,7 +162,7 @@ function MedicationEntryPage({
               disabled={isSaving || pendingEntry !== null}
               type="submit"
             >
-              {isSaving ? 'Enregistrement…' : 'Enregistrer la prise'}
+              {isSaving ? 'Enregistrement…' : submitLabel}
             </button>
           </div>
         </form>

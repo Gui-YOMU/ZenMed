@@ -2,9 +2,13 @@ import { useState } from 'react'
 import MedicationEntryPage from './MedicationEntryPage'
 import { useMedicationLogPageViewModel } from '../hooks/useMedicationLogPageViewModel'
 import { getMedicationDateKey } from '../model/medicationEntryDates'
+import type { MedicationEntryRecord } from '../model/medicationEntry.types'
 
 function MedicationLogPage() {
   const [isAddingEntry, setIsAddingEntry] = useState(false)
+  const [editingEntry, setEditingEntry] = useState<MedicationEntryRecord | null>(
+    null,
+  )
   const {
     errorMessage,
     groups,
@@ -21,15 +25,21 @@ function MedicationLogPage() {
   } = useMedicationLogPageViewModel()
   const hasEntries = groups.length > 0
 
-  if (isAddingEntry) {
+  if (isAddingEntry || editingEntry) {
     return (
       <MedicationEntryPage
-        onCancel={() => setIsAddingEntry(false)}
+        entry={editingEntry ?? undefined}
+        key={editingEntry?.id ?? 'new'}
+        onCancel={() => {
+          setIsAddingEntry(false)
+          setEditingEntry(null)
+        }}
         onSaved={async (entry) => {
           selectDate(getMedicationDateKey(new Date(entry.takenAt)))
           search('')
           await refresh()
           setIsAddingEntry(false)
+          setEditingEntry(null)
         }}
       />
     )
@@ -149,6 +159,17 @@ function MedicationLogPage() {
                         <p className="mt-3 border-t border-slate-100 pt-3 text-sm text-slate-600">
                           Motif : {entry.reason}
                         </p>
+                      ) : null}
+                      {entry.id !== undefined ? (
+                        <div className="mt-3 border-t border-slate-100 pt-3 text-right">
+                          <button
+                            className="min-h-10 rounded-lg px-3 font-medium text-zenmed-blue hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zenmed-blue"
+                            onClick={() => setEditingEntry(entry)}
+                            type="button"
+                          >
+                            Modifier
+                          </button>
+                        </div>
                       ) : null}
                     </li>
                   ))}

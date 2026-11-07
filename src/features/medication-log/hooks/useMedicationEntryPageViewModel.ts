@@ -3,6 +3,7 @@ import { useForm, type FieldPath } from 'react-hook-form'
 import {
   createMedicationEntry,
   listMedicationEntries,
+  updateMedicationEntry,
 } from '../data/medicationEntryRepository'
 import {
   DOSE_UNITS,
@@ -10,12 +11,14 @@ import {
   type DoseUnit,
   type GalenicForm,
   type MedicationEntry,
+  type MedicationEntryRecord,
 } from '../model/medicationEntry.types'
 import { medicationEntrySchema } from '../model/medicationEntryRules'
 
 const RECENT_ENTRY_WINDOW_MS = 4 * 60 * 60 * 1000
 
 interface UseMedicationEntryPageViewModelOptions {
+  existingEntry?: MedicationEntryRecord
   onCancel: () => void
   onSaved: (entry: MedicationEntry) => Promise<void>
 }
@@ -34,13 +37,44 @@ function getLocalDateTimeValue(date: Date): string {
   return localDate.toISOString().slice(0, 16)
 }
 
-function hasRecentMatchingEntry(medicationName: string): Promise<boolean> {
+function getDefaultValues(
+  entry: MedicationEntryRecord | undefined,
+): MedicationEntryFormValues {
+  if (!entry) {
+    return {
+      medicationName: '',
+      form: GALENIC_FORMS[0],
+      dose: '',
+      doseUnit: DOSE_UNITS[0],
+      takenAt: getLocalDateTimeValue(new Date()),
+      reason: '',
+    }
+  }
+
+  return {
+    medicationName: entry.medicationName,
+    form: entry.form,
+    dose: String(entry.dose),
+    doseUnit: entry.doseUnit,
+    takenAt: getLocalDateTimeValue(new Date(entry.takenAt)),
+    reason: entry.reason ?? '',
+  }
+}
+
+function hasRecentMatchingEntry(
+  medicationName: string,
+  excludedEntryId?: number,
+): Promise<boolean> {
   const normalizedName = medicationName.trim().toLocaleLowerCase('fr-FR')
 
   return listMedicationEntries().then((entries) => {
     const now = Date.now()
 
     return entries.some((existingEntry) => {
+      if (existingEntry.id === excludedEntryId) {
+        return false
+      }
+
       const elapsedTime = now - new Date(existingEntry.takenAt).getTime()
       return (
         existingEntry.medicationName.trim().toLocaleLowerCase('fr-FR') ===
@@ -53,10 +87,11 @@ function hasRecentMatchingEntry(medicationName: string): Promise<boolean> {
 }
 
 export function useMedicationEntryPageViewModel({
+  existingEntry,
   onCancel,
   onSaved,
 }: UseMedicationEntryPageViewModelOptions) {
-  const [defaultTakenAt] = useState(() => getLocalDateTimeValue(new Date()))
+  const [defaultValues] = useState(() => getDefaultValues(existingEntry))
   const [pendingEntry, setPendingEntry] = useState<MedicationEntry | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const {
@@ -66,14 +101,7 @@ export function useMedicationEntryPageViewModel({
     setError,
     formState: { errors },
   } = useForm<MedicationEntryFormValues>({
-    defaultValues: {
-      medicationName: '',
-      form: GALENIC_FORMS[0],
-      dose: '',
-      doseUnit: DOSE_UNITS[0],
-      takenAt: defaultTakenAt,
-      reason: '',
-    },
+    defaultValues,
   })
   const registerField = (name: FieldPath<MedicationEntryFormValues>) =>
     register(name, {
@@ -93,14 +121,21 @@ export function useMedicationEntryPageViewModel({
     try {
       if (
         !skipRecentEntryCheck &&
-        (await hasRecentMatchingEntry(entry.medicationName))
+        (await hasRecentMatchingEntry(
+          entry.medicationName,
+          existingEntry?.id,
+        ))
       ) {
         setPendingEntry(entry)
         setIsSaving(false)
         return
       }
 
-      await createMedicationEntry(entry)
+      if (existingEntry?.id === undefined) {
+        await createMedicationEntry(entry)
+      } else {
+        await updateMedicationEntry(existingEntry.id, entry)
+      }
       await onSaved(entry)
     } catch {
       setError('root.submit', {
@@ -161,6 +196,10 @@ export function useMedicationEntryPageViewModel({
     pendingEntry,
     isSaving,
     onCancel,
+    pageTitle: existingEntry ? 'Modifier une prise' : 'Ajouter une prise',
+    submitLabel: existingEntry
+      ? 'Enregistrer les modifications'
+      : 'Enregistrer la prise',
     confirmSave,
     cancelPendingSave,
   }
