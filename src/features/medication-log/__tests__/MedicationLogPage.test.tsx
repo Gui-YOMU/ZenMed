@@ -269,12 +269,16 @@ describe('MedicationLogPage', () => {
   })
 
   it('opens a prefilled edit page and updates the existing entry', async () => {
+    const takenAt = new Date()
+    const localTakenAt = new Date(
+      takenAt.getTime() - takenAt.getTimezoneOffset() * 60_000,
+    )
     const id = await createMedicationEntry({
       medicationName: 'Doliprane',
       form: 'comprimé',
       dose: 500,
       doseUnit: 'mg',
-      takenAt: new Date().toISOString(),
+      takenAt: takenAt.toISOString(),
       reason: 'Maux de tête',
     })
     render(<MedicationLogPage />)
@@ -291,6 +295,12 @@ describe('MedicationLogPage', () => {
     ).toBeInTheDocument()
     expect(screen.getByLabelText('Médicament')).toHaveValue('Doliprane')
     expect(screen.getByLabelText('Dose')).toHaveValue(500)
+    expect(screen.getByLabelText('Date')).toHaveValue(
+      localTakenAt.toISOString().slice(0, 10),
+    )
+    expect(screen.getByLabelText('Heure')).toHaveValue(
+      localTakenAt.toISOString().slice(11, 16),
+    )
     expect(screen.getByLabelText('Motif (facultatif)')).toHaveValue('Maux de tête')
 
     fireEvent.change(screen.getByLabelText('Médicament'), {
@@ -298,6 +308,12 @@ describe('MedicationLogPage', () => {
     })
     fireEvent.change(screen.getByLabelText('Dose'), {
       target: { value: '1000' },
+    })
+    fireEvent.change(screen.getByLabelText('Date'), {
+      target: { value: '2025-02-15' },
+    })
+    fireEvent.change(screen.getByLabelText('Heure'), {
+      target: { value: '08:45' },
     })
     fireEvent.click(
       screen.getByRole('button', { name: 'Enregistrer les modifications' }),
@@ -314,6 +330,7 @@ describe('MedicationLogPage', () => {
       id,
       medicationName: 'Paracétamol',
       dose: 1000,
+      takenAt: new Date('2025-02-15T08:45').toISOString(),
     })
   })
 })

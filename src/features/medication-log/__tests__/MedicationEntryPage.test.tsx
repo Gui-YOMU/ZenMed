@@ -97,6 +97,12 @@ describe('MedicationEntryPage', () => {
     fireEvent.change(screen.getByLabelText('Dose'), {
       target: { value: '500' },
     })
+    fireEvent.change(screen.getByLabelText('Date'), {
+      target: { value: '2026-03-15' },
+    })
+    fireEvent.change(screen.getByLabelText('Heure'), {
+      target: { value: '09:45' },
+    })
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la prise' }))
 
     expect(
@@ -106,6 +112,9 @@ describe('MedicationEntryPage', () => {
       await screen.findByRole('heading', { name: /Paracétamol/ }),
     ).toBeInTheDocument()
     await expect(database.medicationEntries.count()).resolves.toBe(1)
+    await expect(database.medicationEntries.toArray()).resolves.toMatchObject([
+      { takenAt: new Date('2026-03-15T09:45').toISOString() },
+    ])
   })
 
   it('shows a validation message for a zero dose', async () => {

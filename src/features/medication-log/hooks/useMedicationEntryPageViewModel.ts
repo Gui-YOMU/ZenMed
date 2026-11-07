@@ -28,13 +28,19 @@ interface MedicationEntryFormValues {
   form: GalenicForm
   dose: string
   doseUnit: DoseUnit
-  takenAt: string
+  takenDate: string
+  takenTime: string
   reason: string
 }
 
-function getLocalDateTimeValue(date: Date): string {
+function getLocalDateTimeValues(date: Date): Pick<
+  MedicationEntryFormValues,
+  'takenDate' | 'takenTime'
+> {
   const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
-  return localDate.toISOString().slice(0, 16)
+  const [takenDate, takenTime] = localDate.toISOString().slice(0, 16).split('T')
+
+  return { takenDate, takenTime }
 }
 
 function getDefaultValues(
@@ -46,7 +52,7 @@ function getDefaultValues(
       form: GALENIC_FORMS[0],
       dose: '',
       doseUnit: DOSE_UNITS[0],
-      takenAt: getLocalDateTimeValue(new Date()),
+      ...getLocalDateTimeValues(new Date()),
       reason: '',
     }
   }
@@ -56,7 +62,7 @@ function getDefaultValues(
     form: entry.form,
     dose: String(entry.dose),
     doseUnit: entry.doseUnit,
-    takenAt: getLocalDateTimeValue(new Date(entry.takenAt)),
+    ...getLocalDateTimeValues(new Date(entry.takenAt)),
     reason: entry.reason ?? '',
   }
 }
@@ -206,7 +212,7 @@ export function useMedicationEntryPageViewModel({
   const submitEntry = async (values: MedicationEntryFormValues) => {
     setPendingEntry(null)
     clearErrors('root')
-    const takenAtDate = new Date(values.takenAt)
+    const takenAtDate = new Date(`${values.takenDate}T${values.takenTime}`)
 
     if (Number.isNaN(takenAtDate.getTime())) {
       setError('root.validation', {
