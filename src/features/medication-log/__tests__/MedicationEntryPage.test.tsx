@@ -48,6 +48,46 @@ describe('MedicationEntryPage', () => {
     ).toBeInTheDocument()
   })
 
+  it('shows the five most recent unique medications and selects one into the form', async () => {
+    const now = Date.now()
+    const medicationNames = [
+      'Doliprane',
+      'Ibuprofène',
+      'doliprane',
+      'Aspirine',
+      'Cetirizine',
+      'Nurofen',
+      'Spasfon',
+    ]
+
+    for (const [index, medicationName] of medicationNames.entries()) {
+      await createMedicationEntry({
+        medicationName,
+        form: 'comprimé',
+        dose: 500,
+        doseUnit: 'mg',
+        takenAt: new Date(now - index * 60_000).toISOString(),
+      })
+    }
+
+    await openEntryPage()
+
+    const recentMedicationButtons = await screen.findAllByRole('button', {
+      name: /Doliprane|Ibuprofène|Aspirine|Cetirizine|Nurofen|Spasfon/,
+    })
+    expect(recentMedicationButtons.map((button) => button.textContent)).toEqual([
+      'Doliprane',
+      'Ibuprofène',
+      'Aspirine',
+      'Cetirizine',
+      'Nurofen',
+    ])
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ibuprofène' }))
+
+    expect(screen.getByLabelText('Médicament')).toHaveValue('Ibuprofène')
+  })
+
   it('saves a new entry and returns to the journal', async () => {
     await openEntryPage()
 
