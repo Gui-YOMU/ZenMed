@@ -8,6 +8,8 @@ function MedicationLogPage() {
     hasMore,
     loadMore,
     refresh,
+    search,
+    searchQuery,
     selectDate,
     selectedDate,
     selectedDateHeading,
@@ -41,6 +43,17 @@ function MedicationLogPage() {
               />
             </label>
           </div>
+          <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
+            Rechercher par médicament
+            <input
+              autoComplete="off"
+              className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-base shadow-sm placeholder:font-normal placeholder:text-slate-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zenmed-blue"
+              onChange={(event) => search(event.currentTarget.value)}
+              placeholder="Nom du médicament"
+              type="search"
+              value={searchQuery}
+            />
+          </label>
         </div>
       </header>
 
@@ -67,7 +80,9 @@ function MedicationLogPage() {
           </div>
         ) : !hasEntries ? (
           <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
-            Aucune prise enregistrée à cette date.
+            {searchQuery.trim()
+              ? 'Aucune prise ne correspond à cette recherche pour cette date.'
+              : 'Aucune prise enregistrée à cette date.'}
           </p>
         ) : (
           <div className="space-y-6">

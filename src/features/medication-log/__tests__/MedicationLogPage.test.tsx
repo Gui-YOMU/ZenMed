@@ -83,4 +83,47 @@ describe('MedicationLogPage', () => {
     expect(await screen.findByRole('heading', { name: 'Traitement 5' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Afficher plus de prises' })).not.toBeInTheDocument()
   })
+
+  it('filters entries by medication name without regard to case or surrounding spaces', async () => {
+    const now = new Date()
+    for (const [medicationName, minutesAgo] of [
+      ['Doliprane', 0],
+      ['Ibuprofène', 1],
+    ] as const) {
+      await createMedicationEntry({
+        medicationName,
+        form: 'comprimé',
+        dose: 500,
+        doseUnit: 'mg',
+        takenAt: new Date(now.getTime() - minutesAgo * 60_000).toISOString(),
+      })
+    }
+
+    render(<MedicationLogPage />)
+
+    expect(await screen.findByRole('heading', { name: 'Doliprane' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Ibuprofène' })).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Rechercher par médicament'), {
+      target: { value: '  DOLI ' },
+    })
+
+    expect(screen.getByRole('heading', { name: 'Doliprane' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Ibuprofène' })).not.toBeInTheDocument()
+  })
+
+  it('shows a search-specific empty state when no medication matches', async () => {
+    render(<MedicationLogPage />)
+
+    await waitFor(() => {
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    })
+    fireEvent.change(screen.getByLabelText('Rechercher par médicament'), {
+      target: { value: 'Doliprane' },
+    })
+
+    expect(
+      screen.getByText('Aucune prise ne correspond à cette recherche pour cette date.'),
+    ).toBeInTheDocument()
+  })
 })
