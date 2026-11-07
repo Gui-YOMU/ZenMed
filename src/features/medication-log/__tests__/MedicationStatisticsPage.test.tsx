@@ -52,9 +52,25 @@ describe('MedicationStatisticsPage', () => {
 
     expect(
       await screen.findByRole('heading', {
-        name: 'Nombre de prises · Doliprane',
+        name: 'Doliprane',
       }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByText('Statistiques du traitement'),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Récapitulatif par période' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Valeurs calculées à partir de l’historique de l’application, toutes formes galéniques confondues.',
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Les 5 prises les plus récentes' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByLabelText('Rechercher un médicament')).toBeNull()
+    expect(screen.queryByText(/Historique de/)).toBeNull()
     expect(screen.getByText('7 derniers jours').parentElement).toHaveTextContent(
       '5',
     )
