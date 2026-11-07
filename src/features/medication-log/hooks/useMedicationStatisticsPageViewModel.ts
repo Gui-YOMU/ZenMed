@@ -25,9 +25,7 @@ export function useMedicationStatisticsPageViewModel(
   initialMedication: string | null,
 ) {
   const [entries, setEntries] = useState<MedicationEntryRecord[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedMedication, setSelectedMedication] =
-    useState<string | null>(initialMedication)
+  const [selectedMedication] = useState<string | null>(initialMedication)
   const [visibleEntryCount, setVisibleEntryCount] = useState(5)
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -60,30 +58,6 @@ export function useMedicationStatisticsPageViewModel(
     setIsLoading(false)
   }, [])
 
-  const medicationNames = useMemo(() => {
-    const seenNames = new Set<string>()
-    const names: string[] = []
-
-    for (const entry of entries) {
-      const normalizedName = normalizeMedicationName(entry.medicationName)
-
-      if (!seenNames.has(normalizedName)) {
-        seenNames.add(normalizedName)
-        names.push(entry.medicationName.trim())
-      }
-    }
-
-    return names
-  }, [entries])
-
-  const filteredMedicationNames = useMemo(() => {
-    const normalizedQuery = normalizeMedicationName(searchQuery)
-
-    return medicationNames.filter((name) =>
-      normalizeMedicationName(name).includes(normalizedQuery),
-    )
-  }, [medicationNames, searchQuery])
-
   const selectedMedicationEntries = useMemo(
     () =>
       selectedMedication
@@ -102,10 +76,6 @@ export function useMedicationStatisticsPageViewModel(
         : [],
     [entries, selectedMedication],
   )
-  const selectMedication = useCallback((medicationName: string) => {
-    setSelectedMedication(medicationName)
-    setVisibleEntryCount(5)
-  }, [])
   const loadMoreEntries = useCallback(() => {
     setVisibleEntryCount((count) =>
       Math.min(count + 5, selectedMedicationEntries.length),
@@ -114,14 +84,10 @@ export function useMedicationStatisticsPageViewModel(
 
   return {
     errorMessage,
-    filteredMedicationNames,
     isLoading,
     loadEntries,
-    medicationNames,
-    searchQuery,
-    searchMedication: setSearchQuery,
+    hasEntries: entries.length > 0,
     selectedMedication,
-    selectMedication,
     statistics,
     recentEntries: selectedMedicationEntries.slice(0, visibleEntryCount),
     hasMoreEntries: visibleEntryCount < selectedMedicationEntries.length,
