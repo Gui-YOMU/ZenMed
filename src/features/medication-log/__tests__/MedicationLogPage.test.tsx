@@ -43,18 +43,44 @@ describe('MedicationLogPage', () => {
     expect(dateInput).toHaveValue(getDateKey(yesterday))
   })
 
-  it('indicates that entries exist for the selected date', async () => {
+  it('shows medication details and the optional reason', async () => {
     await createMedicationEntry({
       medicationName: 'Doliprane',
       form: 'comprimé',
       dose: 500,
       doseUnit: 'mg',
       takenAt: new Date().toISOString(),
+      reason: 'Maux de tête',
     })
     render(<MedicationLogPage />)
 
-    expect(
-      await screen.findByText('Des prises sont enregistrées à cette date.'),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Doliprane' })).toBeInTheDocument()
+    expect(screen.getByText('500 mg · comprimé')).toBeInTheDocument()
+    expect(screen.getByText('Motif : Maux de tête')).toBeInTheDocument()
+    expect(screen.getByRole('time')).toHaveAttribute('dateTime')
+  })
+
+  it('paginates entries in groups of five', async () => {
+    const now = new Date()
+    for (let index = 0; index < 6; index += 1) {
+      await createMedicationEntry({
+        medicationName: `Traitement ${index}`,
+        form: 'gélule',
+        dose: 1,
+        doseUnit: 'g',
+        takenAt: new Date(now.getTime() - index * 60_000).toISOString(),
+      })
+    }
+
+    render(<MedicationLogPage />)
+
+    expect(await screen.findByRole('heading', { name: 'Traitement 0' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Traitement 4' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Traitement 5' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Afficher plus de prises' }))
+
+    expect(await screen.findByRole('heading', { name: 'Traitement 5' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Afficher plus de prises' })).not.toBeInTheDocument()
   })
 })
