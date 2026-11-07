@@ -17,3 +17,7 @@ export interface MedicationEntry {
   takenAt: string
   reason?: string
 }
+
+export interface MedicationEntryRecord extends MedicationEntry {
+  id?: number
+}
