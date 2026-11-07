@@ -38,13 +38,13 @@ describe('MedicationEntryPage', () => {
     ).toBeInTheDocument()
     expect(screen.getByLabelText('Médicament')).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: 'Mon journal' }),
+      screen.queryByRole('heading', { name: 'Mon journal ZenMed' }),
     ).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Retour au journal' }))
 
     expect(
-      screen.getByRole('heading', { name: 'Mon journal' }),
+      screen.getByRole('heading', { name: 'Mon journal ZenMed' }),
     ).toBeInTheDocument()
   })
 
@@ -100,10 +100,10 @@ describe('MedicationEntryPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la prise' }))
 
     expect(
-      await screen.findByRole('heading', { name: 'Mon journal' }),
+      await screen.findByRole('heading', { name: 'Mon journal ZenMed' }),
     ).toBeInTheDocument()
     expect(
-      await screen.findByRole('heading', { name: 'Paracétamol' }),
+      await screen.findByRole('heading', { name: /Paracétamol/ }),
     ).toBeInTheDocument()
     await expect(database.medicationEntries.count()).resolves.toBe(1)
   })
@@ -151,7 +151,7 @@ describe('MedicationEntryPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer quand même' }))
 
     expect(
-      await screen.findByRole('heading', { name: 'Mon journal' }),
+      await screen.findByRole('heading', { name: 'Mon journal ZenMed' }),
     ).toBeInTheDocument()
     await waitFor(async () => {
       expect(await database.medicationEntries.count()).toBe(2)

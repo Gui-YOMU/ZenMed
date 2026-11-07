@@ -29,7 +29,11 @@ describe('MedicationLogPage', () => {
       expect(screen.queryByRole('status')).not.toBeInTheDocument()
     })
 
-    expect(screen.getByRole('heading', { name: 'Aujourd’hui' })).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date()),
+      ),
+    ).toBeInTheDocument()
 
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
@@ -39,8 +43,46 @@ describe('MedicationLogPage', () => {
       fireEvent.change(dateInput, { target: { value: getDateKey(yesterday) } })
     })
 
-    expect(screen.getByRole('heading', { name: 'Hier' })).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(yesterday),
+      ),
+    ).toBeInTheDocument()
     expect(dateInput).toHaveValue(getDateKey(yesterday))
+  })
+
+  it('shows the app identity and keeps date selection, search, and add in their intended areas', async () => {
+    render(<MedicationLogPage onShowStatistics={() => {}} />)
+
+    const header = screen.getByRole('banner')
+    const entries = screen.getByRole('region', { name: 'Prises de la journée' })
+    const searchAndAdd = screen.getByRole('contentinfo')
+
+    expect(
+      screen.getByRole('heading', { name: 'Mon journal ZenMed' }),
+    ).toBeInTheDocument()
+    expect(header.querySelector('img')).toHaveAttribute(
+      'src',
+      '/icons/icon-192.png',
+    )
+    expect(
+      screen.getByLabelText('Choisir une date'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('searchbox', { name: 'Rechercher par médicament' }),
+    ).toBeInTheDocument()
+    expect(
+      searchAndAdd.contains(
+        screen.getByRole('button', { name: 'Ajouter une prise' }),
+      ),
+    ).toBe(true)
+    expect(
+      screen.queryByRole('button', { name: 'Statistiques' }),
+    ).not.toBeInTheDocument()
+    expect(
+      entries.compareDocumentPosition(searchAndAdd) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
   })
 
   it('shows medication details and the optional reason', async () => {
@@ -54,10 +96,102 @@ describe('MedicationLogPage', () => {
     })
     render(<MedicationLogPage />)
 
-    expect(await screen.findByRole('heading', { name: 'Doliprane' })).toBeInTheDocument()
-    expect(screen.getByText('500 mg · comprimé')).toBeInTheDocument()
-    expect(screen.getByText('Motif : Maux de tête')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Doliprane/ })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Doliprane · 500 mg' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Comprimé · Maux de tête')).toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: 'Forme galénique : comprimé' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('time')).toHaveAttribute('dateTime')
+  })
+
+  it('shows actions for only one medication entry at a time', async () => {
+    const now = Date.now()
+    for (const [index, medicationName] of [
+      'Doliprane',
+      'Ibuprofène',
+    ].entries()) {
+      await createMedicationEntry({
+        medicationName,
+        form: 'comprimé',
+        dose: 500,
+        doseUnit: 'mg',
+        takenAt: new Date(now - index * 60_000).toISOString(),
+      })
+    }
+
+    render(<MedicationLogPage />)
+
+    await screen.findByRole('heading', { name: /Doliprane/ })
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Actions pour Doliprane' }),
+    )
+    expect(
+      screen.getByRole('button', { name: 'Modifier Doliprane' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Supprimer Doliprane' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Actions pour Ibuprofène' }),
+    )
+
+    expect(
+      screen.queryByRole('button', { name: 'Modifier Doliprane' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Modifier Ibuprofène' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Supprimer Ibuprofène' }),
+    ).toBeInTheDocument()
+  })
+
+  it('uses a distinct icon for each galenic form and displays details in two lines', async () => {
+    const now = Date.now()
+    for (const [index, form] of (
+      ['comprimé', 'gélule', 'sachet/poudre'] as const
+    ).entries()) {
+      await createMedicationEntry({
+        medicationName: `Médicament ${index}`,
+        form,
+        dose: 250,
+        doseUnit: 'mg',
+        takenAt: new Date(now - index * 60_000).toISOString(),
+        reason: index === 1 ? 'Douleur' : undefined,
+      })
+    }
+
+    render(<MedicationLogPage />)
+
+    expect(
+      await screen.findByRole('img', { name: 'Forme galénique : comprimé' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: 'Forme galénique : gélule' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: 'Forme galénique : sachet/poudre' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Gélule · Douleur')).toBeInTheDocument()
+    expect(screen.queryByText('Motif : Douleur')).not.toBeInTheDocument()
+  })
+
+  it('opens the entry form from the plus button beside medication search', async () => {
+    render(<MedicationLogPage onShowStatistics={() => {}} />)
+
+    expect(
+      screen.queryByRole('button', { name: 'Statistiques' }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ajouter une prise' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Ajouter une prise' }),
+    ).toBeInTheDocument()
   })
 
   it('paginates entries in groups of five', async () => {
@@ -74,13 +208,13 @@ describe('MedicationLogPage', () => {
 
     render(<MedicationLogPage />)
 
-    expect(await screen.findByRole('heading', { name: 'Traitement 0' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Traitement 4' })).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Traitement 5' })).not.toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Traitement 0/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Traitement 4/ })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /Traitement 5/ })).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Afficher plus de prises' }))
 
-    expect(await screen.findByRole('heading', { name: 'Traitement 5' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Traitement 5/ })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Afficher plus de prises' })).not.toBeInTheDocument()
   })
 
@@ -102,15 +236,15 @@ describe('MedicationLogPage', () => {
     const showStatistics = vi.fn()
     render(<MedicationLogPage onShowStatistics={showStatistics} />)
 
-    expect(await screen.findByRole('heading', { name: 'Doliprane' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Ibuprofène' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Doliprane/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Ibuprofène/ })).toBeInTheDocument()
 
     fireEvent.change(screen.getByLabelText('Rechercher par médicament'), {
       target: { value: '  DOLI ' },
     })
 
-    expect(screen.getByRole('heading', { name: 'Doliprane' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Ibuprofène' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Doliprane/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Ibuprofène/ })).toBeInTheDocument()
     fireEvent.click(
       screen.getByRole('button', {
         name: 'Voir les statistiques de Doliprane',
@@ -146,7 +280,10 @@ describe('MedicationLogPage', () => {
     render(<MedicationLogPage />)
 
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Modifier' }),
+      await screen.findByRole('button', { name: 'Actions pour Doliprane' }),
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Modifier Doliprane' }),
     )
 
     expect(
@@ -167,10 +304,10 @@ describe('MedicationLogPage', () => {
     )
 
     expect(
-      await screen.findByRole('heading', { name: 'Mon journal' }),
+      await screen.findByRole('heading', { name: 'Mon journal ZenMed' }),
     ).toBeInTheDocument()
     expect(
-      await screen.findByRole('heading', { name: 'Paracétamol' }),
+      await screen.findByRole('heading', { name: /Paracétamol/ }),
     ).toBeInTheDocument()
     expect(await database.medicationEntries.count()).toBe(1)
     expect(await database.medicationEntries.get(id)).toMatchObject({
