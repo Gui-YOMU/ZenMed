@@ -6,7 +6,7 @@ import {
   listMedicationEntries,
   updateMedicationEntry,
 } from '../data/medicationEntryRepository'
-import type { MedicationEntry } from '../model/medicationEntry.types'
+import type { MedicationEntry } from '../model/medicationEntry'
 
 const firstEntry: MedicationEntry = {
   medicationName: 'Doliprane',

@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { MedicationEntryRecord } from '../../features/medication-log/model/medicationEntry.types'
+import type { MedicationEntryRecord } from '../../features/medication-log/model/medicationEntry'
 
 export interface PinCredential {
   id: 'pin'

@@ -2,9 +2,10 @@ import { ArrowLeft, CalendarClock, ClipboardList, Pill } from 'lucide-react'
 import {
   DOSE_UNITS,
   GALENIC_FORMS,
+  normalizeMedicationName,
   type MedicationEntry,
   type MedicationEntryRecord,
-} from '../model/medicationEntry.types'
+} from '../model/medicationEntry'
 import { useMedicationEntryPageViewModel } from '../hooks/useMedicationEntryPageViewModel'
 import RecentMedicationEntryAlert from '../components/RecentMedicationEntryAlert'
 
@@ -117,7 +118,7 @@ function MedicationEntryPage({
                   {recentMedicationNames.map((medicationName) => (
                     <button
                       className="min-h-10 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-zenmed-blue transition-colors hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zenmed-blue"
-                      key={medicationName.toLocaleLowerCase('fr-FR')}
+                      key={normalizeMedicationName(medicationName)}
                       onClick={() => selectRecentMedication(medicationName)}
                       type="button"
                     >

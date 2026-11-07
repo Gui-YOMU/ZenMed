@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { listMedicationEntries } from '../data/medicationEntryRepository'
-import type { MedicationEntryRecord } from '../model/medicationEntry.types'
+import {
+  normalizeMedicationName,
+  type MedicationEntryRecord,
+} from '../model/medicationEntry'
 import { getMedicationStatistics } from '../model/medicationStatistics'
-
-function normalizeMedicationName(name: string): string {
-  return name.trim().toLocaleLowerCase('fr-FR')
-}
 
 async function readMedicationEntries(): Promise<
   | { entries: MedicationEntryRecord[]; errorMessage: null }
@@ -25,7 +24,7 @@ export function useMedicationStatisticsPageViewModel(
   initialMedication: string | null,
 ) {
   const [entries, setEntries] = useState<MedicationEntryRecord[]>([])
-  const [selectedMedication] = useState<string | null>(initialMedication)
+  const selectedMedication = initialMedication
   const [visibleEntryCount, setVisibleEntryCount] = useState(5)
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)

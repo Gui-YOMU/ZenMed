@@ -14,7 +14,10 @@ import MedicationEntryPage from './MedicationEntryPage'
 import GalenicFormIcon from '../components/GalenicFormIcon'
 import { useMedicationLogPageViewModel } from '../hooks/useMedicationLogPageViewModel'
 import { getMedicationDateKey } from '../model/medicationEntryDates'
-import type { MedicationEntryRecord } from '../model/medicationEntry.types'
+import {
+  normalizeMedicationName,
+  type MedicationEntryRecord,
+} from '../model/medicationEntry'
 
 interface MedicationLogPageProps {
   onShowStatistics?: (medicationName?: string) => void
@@ -293,7 +296,7 @@ function MedicationLogPage({
                 className="grid max-h-40 gap-2 overflow-y-auto pt-3 sm:grid-cols-2"
               >
                 {filteredMedicationNames.map((medicationName) => (
-                  <li key={medicationName.toLocaleLowerCase('fr-FR')}>
+                  <li key={normalizeMedicationName(medicationName)}>
                     <button
                       aria-label={`Voir les statistiques de ${medicationName}`}
                       className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-2 text-left font-medium text-zenmed-blue transition-colors hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zenmed-blue"

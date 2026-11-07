@@ -3,24 +3,17 @@ import {
   deleteMedicationEntry,
   listMedicationEntries,
 } from '../data/medicationEntryRepository'
-import type { MedicationEntryRecord } from '../model/medicationEntry.types'
+import {
+  normalizeMedicationName,
+  type MedicationEntryRecord,
+} from '../model/medicationEntry'
+import { getMedicationDateKey } from '../model/medicationEntryDates'
 
 const PAGE_SIZE = 5
 
-function toLocalDateKey(date: Date): string {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-function getTodayDateKey(): string {
-  return toLocalDateKey(new Date())
-}
-
 export function useMedicationEntries() {
   const [entries, setEntries] = useState<MedicationEntryRecord[]>([])
-  const [todayDateKey] = useState(getTodayDateKey)
+  const [todayDateKey] = useState(() => getMedicationDateKey(new Date()))
   const [selectedDate, setSelectedDate] = useState(todayDateKey)
   const [searchQuery, setSearchQuery] = useState('')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -93,7 +86,7 @@ export function useMedicationEntries() {
 
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
-      const entryDate = toLocalDateKey(new Date(entry.takenAt))
+      const entryDate = getMedicationDateKey(new Date(entry.takenAt))
       return entryDate === selectedDate
     })
   }, [entries, selectedDate])
@@ -104,7 +97,7 @@ export function useMedicationEntries() {
 
     for (const entry of entries) {
       const medicationName = entry.medicationName.trim()
-      const normalizedName = medicationName.toLocaleLowerCase('fr-FR')
+      const normalizedName = normalizeMedicationName(medicationName)
 
       if (!seenNames.has(normalizedName)) {
         seenNames.add(normalizedName)
@@ -116,10 +109,10 @@ export function useMedicationEntries() {
   }, [entries])
 
   const filteredMedicationNames = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLocaleLowerCase('fr-FR')
+    const normalizedQuery = normalizeMedicationName(searchQuery)
 
     return medicationNames.filter((name) =>
-      name.toLocaleLowerCase('fr-FR').includes(normalizedQuery),
+      normalizeMedicationName(name).includes(normalizedQuery),
     )
   }, [medicationNames, searchQuery])
 

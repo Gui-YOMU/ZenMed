@@ -8,12 +8,13 @@ import {
 import {
   DOSE_UNITS,
   GALENIC_FORMS,
+  normalizeMedicationName,
   type DoseUnit,
   type GalenicForm,
   type MedicationEntry,
   type MedicationEntryRecord,
-} from '../model/medicationEntry.types'
-import { medicationEntrySchema } from '../model/medicationEntryRules'
+  medicationEntrySchema,
+} from '../model/medicationEntry'
 
 const RECENT_ENTRY_WINDOW_MS = 4 * 60 * 60 * 1000
 
@@ -71,7 +72,7 @@ function hasRecentMatchingEntry(
   medicationName: string,
   excludedEntryId?: number,
 ): Promise<boolean> {
-  const normalizedName = medicationName.trim().toLocaleLowerCase('fr-FR')
+  const normalizedName = normalizeMedicationName(medicationName)
 
   return listMedicationEntries().then((entries) => {
     const now = Date.now()
@@ -83,7 +84,7 @@ function hasRecentMatchingEntry(
 
       const elapsedTime = now - new Date(existingEntry.takenAt).getTime()
       return (
-        existingEntry.medicationName.trim().toLocaleLowerCase('fr-FR') ===
+        normalizeMedicationName(existingEntry.medicationName) ===
           normalizedName &&
         elapsedTime >= 0 &&
         elapsedTime <= RECENT_ENTRY_WINDOW_MS
@@ -125,9 +126,9 @@ export function useMedicationEntryPageViewModel({
         const names: string[] = []
 
         for (const existingEntry of entries) {
-          const normalizedName = existingEntry.medicationName
-            .trim()
-            .toLocaleLowerCase('fr-FR')
+          const normalizedName = normalizeMedicationName(
+            existingEntry.medicationName,
+          )
 
           if (!seenNames.has(normalizedName)) {
             seenNames.add(normalizedName)

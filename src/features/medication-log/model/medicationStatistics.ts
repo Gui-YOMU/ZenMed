@@ -1,4 +1,7 @@
-import type { MedicationEntryRecord } from './medicationEntry.types'
+import {
+  normalizeMedicationName,
+  type MedicationEntryRecord,
+} from './medicationEntry'
 
 export const STATISTICS_PERIODS = [
   { id: '7-days', label: '7 derniers jours', unit: 'days', amount: 7 },
@@ -13,10 +16,6 @@ export interface MedicationStatistic {
   period: MedicationStatisticsPeriod
   label: string
   count: number
-}
-
-function normalizeMedicationName(name: string): string {
-  return name.trim().toLocaleLowerCase('fr-FR')
 }
 
 function subtractMonths(date: Date, amount: number): Date {

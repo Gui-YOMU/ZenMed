@@ -1,4 +1,4 @@
-import type { MedicationEntryRecord } from './medicationEntry.types'
+import type { MedicationEntryRecord } from './medicationEntry'
 import {
   getMedicationDateKey,
   getMedicationDateLabel,
