@@ -30,40 +30,53 @@ describe('Medication entry deletion', () => {
 
   it('conserve la prise lorsque la suppression est annulée', async () => {
     await renderEntry()
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Actions pour Doliprane' }),
     )
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Supprimer Doliprane' }),
-    )
+    const deleteButton = screen.getByRole('button', {
+      name: 'Supprimer Doliprane',
+    })
+    deleteButton.focus()
+    fireEvent.click(deleteButton)
 
-    expect(confirmSpy).toHaveBeenCalledWith(
+    const dialog = screen.getByRole('alertdialog', {
+      name: 'Confirmer la suppression',
+    })
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(dialog).toHaveTextContent(
       'Supprimer la prise de Doliprane ? Cette action est irréversible.',
     )
+    expect(screen.getByRole('button', { name: 'Annuler' })).toHaveFocus()
+    fireEvent.click(screen.getByRole('button', { name: 'Annuler' }))
+
     expect(await database.medicationEntries.count()).toBe(1)
     expect(
       screen.getByRole('heading', { name: 'Doliprane · 500 mg' }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Supprimer Doliprane' }),
+    ).toHaveFocus()
   })
 
   it('supprime la prise et actualise le journal après confirmation', async () => {
     await renderEntry()
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Actions pour Doliprane' }),
     )
     fireEvent.click(
       screen.getByRole('button', { name: 'Supprimer Doliprane' }),
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Supprimer la prise' }),
     )
 
     await waitFor(async () => {
       expect(await database.medicationEntries.count()).toBe(0)
     })
     expect(
-      await screen.findByText('Aucune prise enregistrée à cette date.'),
+      await screen.findByText('Aucune prise enregistrée'),
     ).toBeInTheDocument()
     expect(
       screen.queryByRole('heading', { name: 'Doliprane · 500 mg' }),

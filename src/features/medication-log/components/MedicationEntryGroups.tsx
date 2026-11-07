@@ -3,13 +3,14 @@ import { ArrowRight, CalendarDays } from 'lucide-react'
 import type { MedicationEntryRecord } from '../model/medicationEntry'
 import type { MedicationEntryGroup } from '../model/medicationEntryGroups'
 import MedicationEntryCard from './MedicationEntryCard'
+import DeleteMedicationEntryDialog from './DeleteMedicationEntryDialog'
 
 interface MedicationEntryGroupsProps {
   groups: MedicationEntryGroup[]
   hasMore: boolean
   onLoadMore: () => void
   onEdit: (entry: MedicationEntryRecord) => void
-  onRemove: (entryId: number) => void
+  onRemove: (entryId: number) => Promise<boolean>
 }
 
 function MedicationEntryGroups({
@@ -22,6 +23,21 @@ function MedicationEntryGroups({
   const [openActionsEntryId, setOpenActionsEntryId] = useState<number | null>(
     null,
   )
+  const [pendingDeletion, setPendingDeletion] =
+    useState<MedicationEntryRecord | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const confirmDeletion = async () => {
+    if (pendingDeletion?.id === undefined) {
+      return
+    }
+
+    setIsDeleting(true)
+    await onRemove(pendingDeletion.id)
+    setIsDeleting(false)
+    setPendingDeletion(null)
+    setOpenActionsEntryId(null)
+  }
 
   return (
     <div className="space-y-6">
@@ -47,15 +63,7 @@ function MedicationEntryGroups({
                       isOpen: openActionsEntryId === entryId,
                       onToggle: () => setOpenActionsEntryId(entryId),
                       onEdit: () => onEdit(entry),
-                      onDelete: () => {
-                        const confirmed = window.confirm(
-                          `Supprimer la prise de ${entry.medicationName} ? Cette action est irréversible.`,
-                        )
-                        if (confirmed) {
-                          onRemove(entryId)
-                        }
-                        setOpenActionsEntryId(null)
-                      },
+                      onDelete: () => setPendingDeletion(entry),
                     }
 
               return (
@@ -82,6 +90,14 @@ function MedicationEntryGroups({
             </span>
           </button>
         </div>
+      ) : null}
+      {pendingDeletion ? (
+        <DeleteMedicationEntryDialog
+          isDeleting={isDeleting}
+          medicationName={pendingDeletion.medicationName}
+          onCancel={() => setPendingDeletion(null)}
+          onConfirm={() => void confirmDeletion()}
+        />
       ) : null}
     </div>
   )

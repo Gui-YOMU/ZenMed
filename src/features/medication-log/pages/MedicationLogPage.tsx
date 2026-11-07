@@ -98,7 +98,7 @@ function MedicationLogPage({
               <ClipboardList aria-hidden="true" size={26} />
             </span>
             <h3 className="mt-4 font-semibold text-slate-800">
-              Aucune prise enregistrée à cette date.
+              Aucune prise enregistrée
             </h3>
             <p className="mt-1 max-w-xs text-sm leading-6 text-slate-600">
               Ajoutez une prise pour commencer votre journal de santé.
@@ -110,7 +110,7 @@ function MedicationLogPage({
             hasMore={hasMore}
             onEdit={setEditingEntry}
             onLoadMore={loadMore}
-            onRemove={(entryId) => void removeEntry(entryId)}
+            onRemove={removeEntry}
           />
         )}
       </section>
