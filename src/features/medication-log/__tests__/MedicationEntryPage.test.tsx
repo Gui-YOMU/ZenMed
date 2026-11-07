@@ -150,6 +150,15 @@ describe('MedicationEntryPage', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la prise' }))
 
+    const warningDialog = await screen.findByRole('alertdialog', {
+      name: 'Prise récente du même traitement',
+    })
+    expect(warningDialog).toHaveAttribute('aria-modal', 'true')
+    expect(
+      screen.getByText(
+        'Ce repère se base sur votre historique et ne constitue pas un avis médical.',
+      ),
+    ).toBeInTheDocument()
     expect(
       await screen.findByText(
         /Une prise identique est enregistrée dans les quatre dernières heures/,
@@ -165,6 +174,34 @@ describe('MedicationEntryPage', () => {
     await waitFor(async () => {
       expect(await database.medicationEntries.count()).toBe(2)
     })
+  })
+
+  it('closes the recent-entry modal with Escape and preserves the form', async () => {
+    await createMedicationEntry({
+      medicationName: 'Doliprane',
+      form: 'comprimé',
+      dose: 500,
+      doseUnit: 'mg',
+      takenAt: new Date().toISOString(),
+    })
+    await openEntryPage()
+    fireEvent.change(screen.getByLabelText('Médicament'), {
+      target: { value: 'Doliprane' },
+    })
+    fireEvent.change(screen.getByLabelText('Dose'), {
+      target: { value: '500' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la prise' }))
+
+    const warningDialog = await screen.findByRole('alertdialog')
+    const cancelButton = screen.getByRole('button', { name: 'Annuler' })
+    expect(cancelButton).toHaveFocus()
+
+    fireEvent.keyDown(warningDialog, { key: 'Escape' })
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Médicament')).toHaveValue('Doliprane')
+    expect(await database.medicationEntries.count()).toBe(1)
   })
 
   it('cancels the recent-entry warning when a field changes', async () => {
