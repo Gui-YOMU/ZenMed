@@ -92,21 +92,36 @@ export function useMedicationEntries() {
   )
 
   const filteredEntries = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLocaleLowerCase('fr-FR')
-
     return entries.filter((entry) => {
       const entryDate = toLocalDateKey(new Date(entry.takenAt))
-      const matchesDate = entryDate === selectedDate
-      const matchesMedication =
-        normalizedQuery.length === 0 ||
-        entry.medicationName
-          .trim()
-          .toLocaleLowerCase('fr-FR')
-          .includes(normalizedQuery)
-
-      return matchesDate && matchesMedication
+      return entryDate === selectedDate
     })
-  }, [entries, searchQuery, selectedDate])
+  }, [entries, selectedDate])
+
+  const medicationNames = useMemo(() => {
+    const seenNames = new Set<string>()
+    const names: string[] = []
+
+    for (const entry of entries) {
+      const medicationName = entry.medicationName.trim()
+      const normalizedName = medicationName.toLocaleLowerCase('fr-FR')
+
+      if (!seenNames.has(normalizedName)) {
+        seenNames.add(normalizedName)
+        names.push(medicationName)
+      }
+    }
+
+    return names
+  }, [entries])
+
+  const filteredMedicationNames = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLocaleLowerCase('fr-FR')
+
+    return medicationNames.filter((name) =>
+      name.toLocaleLowerCase('fr-FR').includes(normalizedQuery),
+    )
+  }, [medicationNames, searchQuery])
 
   const visibleEntries = filteredEntries.slice(0, visibleCount)
   const hasMore = visibleCount < filteredEntries.length
@@ -118,7 +133,6 @@ export function useMedicationEntries() {
 
   const search = useCallback((query: string) => {
     setSearchQuery(query)
-    setVisibleCount(PAGE_SIZE)
   }, [])
 
   const loadMore = useCallback(() => {
@@ -129,6 +143,7 @@ export function useMedicationEntries() {
 
   return {
     entries: visibleEntries,
+    filteredMedicationNames,
     todayDateKey,
     selectedDate,
     searchQuery,

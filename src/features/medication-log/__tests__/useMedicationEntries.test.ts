@@ -77,7 +77,7 @@ describe('useMedicationEntries', () => {
     ).toBe(false)
   })
 
-  it('filters the selected date by a case-insensitive partial medication name', async () => {
+  it('searches matching medication names without filtering the journal list', async () => {
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
@@ -99,11 +99,11 @@ describe('useMedicationEntries', () => {
 
     act(() => result.current.search('DOLI'))
 
-    expect(result.current.entries).toHaveLength(1)
-    expect(result.current.entries[0].medicationName).toBe('Doliprane')
+    expect(result.current.entries).toHaveLength(2)
+    expect(result.current.filteredMedicationNames).toEqual(['Doliprane'])
   })
 
-  it('shows entries for the chosen day and resets pagination when filters change', async () => {
+  it('keeps journal entries and pagination unchanged while searching medication names', async () => {
     const today = new Date()
     const selectedDate = new Date(today)
     selectedDate.setDate(selectedDate.getDate() - 1)
@@ -134,11 +134,12 @@ describe('useMedicationEntries', () => {
     expect(result.current.entries).toHaveLength(6)
 
     act(() => result.current.search('Hier 2'))
-    expect(result.current.entries).toHaveLength(1)
+    expect(result.current.entries).toHaveLength(6)
+    expect(result.current.filteredMedicationNames).toEqual(['Hier 2'])
     expect(result.current.hasMore).toBe(false)
 
     act(() => result.current.search(''))
-    expect(result.current.entries).toHaveLength(5)
-    expect(result.current.hasMore).toBe(true)
+    expect(result.current.entries).toHaveLength(6)
+    expect(result.current.hasMore).toBe(false)
   })
 })

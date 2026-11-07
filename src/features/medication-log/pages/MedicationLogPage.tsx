@@ -4,13 +4,20 @@ import { useMedicationLogPageViewModel } from '../hooks/useMedicationLogPageView
 import { getMedicationDateKey } from '../model/medicationEntryDates'
 import type { MedicationEntryRecord } from '../model/medicationEntry.types'
 
-function MedicationLogPage() {
+interface MedicationLogPageProps {
+  onShowStatistics?: (medicationName?: string) => void
+}
+
+function MedicationLogPage({
+  onShowStatistics,
+}: MedicationLogPageProps) {
   const [isAddingEntry, setIsAddingEntry] = useState(false)
   const [editingEntry, setEditingEntry] = useState<MedicationEntryRecord | null>(
     null,
   )
   const {
     errorMessage,
+    filteredMedicationNames,
     groups,
     isLoading,
     hasMore,
@@ -56,13 +63,24 @@ function MedicationLogPage() {
               Mon journal
             </h1>
           </div>
-          <button
-            className="min-h-11 self-start rounded-lg bg-zenmed-blue px-4 py-2 font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zenmed-blue"
-            onClick={() => setIsAddingEntry(true)}
-            type="button"
-          >
-            Ajouter une prise
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              className="min-h-11 self-start rounded-lg bg-zenmed-blue px-4 py-2 font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zenmed-blue"
+              onClick={() => setIsAddingEntry(true)}
+              type="button"
+            >
+              Ajouter une prise
+            </button>
+            {onShowStatistics ? (
+              <button
+                className="min-h-11 self-start rounded-lg border border-zenmed-blue px-4 py-2 font-medium text-zenmed-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zenmed-blue"
+                onClick={() => onShowStatistics()}
+                type="button"
+              >
+                Statistiques
+              </button>
+            ) : null}
+          </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -90,6 +108,32 @@ function MedicationLogPage() {
               value={searchQuery}
             />
           </label>
+          {searchQuery.trim() ? (
+            filteredMedicationNames.length > 0 ? (
+              <ul
+                aria-label="Médicaments correspondants pour les statistiques"
+                className="flex flex-wrap gap-2"
+              >
+                {filteredMedicationNames.map((medicationName) => (
+                  <li key={medicationName.toLocaleLowerCase('fr-FR')}>
+                    <button
+                      className="min-h-10 rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-zenmed-blue hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zenmed-blue"
+                      onClick={() =>
+                        onShowStatistics?.(medicationName)
+                      }
+                      type="button"
+                    >
+                      Voir les statistiques de {medicationName}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-slate-600">
+                Aucun médicament ne correspond à cette recherche.
+              </p>
+            )
+          ) : null}
         </div>
       </header>
 
@@ -116,9 +160,7 @@ function MedicationLogPage() {
           </div>
         ) : !hasEntries ? (
           <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
-            {searchQuery.trim()
-              ? 'Aucune prise ne correspond à cette recherche pour cette date.'
-              : 'Aucune prise enregistrée à cette date.'}
+            Aucune prise enregistrée à cette date.
           </p>
         ) : (
           <div className="space-y-6">

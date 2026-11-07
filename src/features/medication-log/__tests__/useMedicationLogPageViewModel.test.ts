@@ -80,7 +80,7 @@ describe('useMedicationLogPageViewModel', () => {
     )
   })
 
-  it('passes search, pagination, and refresh actions through the view model', async () => {
+  it('passes medication search, pagination, and refresh actions through the view model', async () => {
     const today = new Date()
 
     for (let hour = 0; hour < 6; hour += 1) {
@@ -103,16 +103,14 @@ describe('useMedicationLogPageViewModel', () => {
 
     act(() => result.current.search('Traitement 3'))
 
-    expect(result.current.groups[0].entries).toHaveLength(1)
-    expect(result.current.groups[0].entries[0].medicationName).toBe(
-      'Traitement 3',
-    )
+    expect(result.current.groups[0].entries).toHaveLength(6)
+    expect(result.current.filteredMedicationNames).toEqual(['Traitement 3'])
 
     await act(async () => {
       await result.current.refresh()
     })
 
-    expect(result.current.groups[0].entries).toHaveLength(1)
+    expect(result.current.groups[0].entries).toHaveLength(6)
     expect(result.current.errorMessage).toBeNull()
   })
 })
