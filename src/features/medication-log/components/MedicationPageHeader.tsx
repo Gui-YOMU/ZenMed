@@ -57,7 +57,7 @@ function MedicationPageHeader({
               alt=""
               className="size-12 shrink-0 rounded-xl"
               height={48}
-              src="/icons/icon-192.png"
+              src={`${import.meta.env.BASE_URL}icons/icon-192.png`}
               width={48}
             />
             <div className="min-w-0">

@@ -63,7 +63,7 @@ describe('MedicationLogPage', () => {
     ).toBeInTheDocument()
     expect(header.querySelector('img')).toHaveAttribute(
       'src',
-      '/icons/icon-192.png',
+      `${import.meta.env.BASE_URL}icons/icon-192.png`,
     )
     expect(
       screen.getByLabelText('Choisir une date'),
