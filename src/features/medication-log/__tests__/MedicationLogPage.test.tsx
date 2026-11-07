@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import MedicationLogPage from '../pages/MedicationLogPage'
 import { database } from '../../../shared/storage/database'
 import { createMedicationEntry } from '../data/medicationEntryRepository'
@@ -84,7 +84,7 @@ describe('MedicationLogPage', () => {
     expect(screen.queryByRole('button', { name: 'Afficher plus de prises' })).not.toBeInTheDocument()
   })
 
-  it('filters entries by medication name without regard to case or surrounding spaces', async () => {
+  it('keeps the journal list intact and opens matching medication statistics', async () => {
     const now = new Date()
     for (const [medicationName, minutesAgo] of [
       ['Doliprane', 0],
@@ -99,7 +99,8 @@ describe('MedicationLogPage', () => {
       })
     }
 
-    render(<MedicationLogPage />)
+    const showStatistics = vi.fn()
+    render(<MedicationLogPage onShowStatistics={showStatistics} />)
 
     expect(await screen.findByRole('heading', { name: 'Doliprane' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Ibuprofène' })).toBeInTheDocument()
@@ -109,11 +110,17 @@ describe('MedicationLogPage', () => {
     })
 
     expect(screen.getByRole('heading', { name: 'Doliprane' })).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Ibuprofène' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Ibuprofène' })).toBeInTheDocument()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Voir les statistiques de Doliprane',
+      }),
+    )
+    expect(showStatistics).toHaveBeenCalledWith('Doliprane')
   })
 
-  it('shows a search-specific empty state when no medication matches', async () => {
-    render(<MedicationLogPage />)
+  it('shows when no medication matches the statistics search', async () => {
+    render(<MedicationLogPage onShowStatistics={() => {}} />)
 
     await waitFor(() => {
       expect(screen.queryByRole('status')).not.toBeInTheDocument()
@@ -123,7 +130,7 @@ describe('MedicationLogPage', () => {
     })
 
     expect(
-      screen.getByText('Aucune prise ne correspond à cette recherche pour cette date.'),
+      screen.getByText('Aucun médicament ne correspond à cette recherche.'),
     ).toBeInTheDocument()
   })
 
