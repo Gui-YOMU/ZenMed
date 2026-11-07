@@ -18,11 +18,11 @@ const validEntry: MedicationEntry = {
 }
 
 describe('medicationEntrySchema', () => {
-  it('normalizes medication names consistently for case-insensitive matching', () => {
+  it('normalise les noms de médicaments de manière cohérente pour ignorer la casse', () => {
     expect(normalizeMedicationName('  DOLIPRANE ')).toBe('doliprane')
   })
 
-  it('accepts a valid entry and trims the medication name', () => {
+  it('accepte une prise valide et supprime les espaces superflus du nom du médicament', () => {
     const result = medicationEntrySchema.parse({
       ...validEntry,
       medicationName: '  Doliprane  ',
@@ -31,7 +31,7 @@ describe('medicationEntrySchema', () => {
     expect(result.medicationName).toBe('Doliprane')
   })
 
-  it('accepts every MVP galenic form and dose unit', () => {
+  it('accepte chaque forme galénique et unité de dose prévues pour le MVP', () => {
     for (const form of GALENIC_FORMS) {
       for (const doseUnit of DOSE_UNITS) {
         expect(
@@ -46,7 +46,7 @@ describe('medicationEntrySchema', () => {
   })
 
   it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
-    'rejects a non-positive or non-finite dose: %s',
+    'refuse une dose négative, nulle ou non finie : %s',
     (dose) => {
       expect(
         medicationEntrySchema.safeParse({ ...validEntry, dose }).success,
@@ -54,7 +54,7 @@ describe('medicationEntrySchema', () => {
     },
   )
 
-  it.each(['', '   '])('rejects an empty medication name: %j', (medicationName) => {
+  it.each(['', '   '])('refuse un nom de médicament vide : %j', (medicationName) => {
     expect(
       medicationEntrySchema.safeParse({
         ...validEntry,
@@ -63,7 +63,7 @@ describe('medicationEntrySchema', () => {
     ).toBe(false)
   })
 
-  it('treats a blank optional reason as absent and trims a provided reason', () => {
+  it('considère un motif facultatif vide comme absent et supprime les espaces superflus', () => {
     expect(
       medicationEntrySchema.parse({ ...validEntry, reason: '   ' }).reason,
     ).toBeUndefined()
@@ -78,13 +78,13 @@ describe('medicationEntrySchema', () => {
     '2026-02-30T10:00:00.000Z',
     'not a date',
     '2026-11-07',
-  ])('rejects an invalid timestamp: %s', (takenAt) => {
+  ])('refuse un horodatage invalide : %s', (takenAt) => {
     expect(
       medicationEntrySchema.safeParse({ ...validEntry, takenAt }).success,
     ).toBe(false)
   })
 
-  it('rejects a form or dose unit outside the MVP lists', () => {
+  it('refuse une forme ou une unité de dose absente des listes du MVP', () => {
     expect(
       medicationEntrySchema.safeParse({
         ...validEntry,

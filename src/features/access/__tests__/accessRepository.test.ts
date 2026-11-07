@@ -12,7 +12,7 @@ describe('access repository', () => {
     await accessRepositoryTest.resetDatabase()
   })
 
-  it('stores a salted verifier instead of the PIN and verifies it', async () => {
+  it('enregistre un vérificateur salé plutôt que le code PIN et le vérifie', async () => {
     expect(await hasPin()).toBe(false)
     await createPin('123456')
 
@@ -27,14 +27,14 @@ describe('access repository', () => {
     expect(await verifyPin('12345')).toBe(false)
   })
 
-  it('rejects invalid PINs when creating a credential', async () => {
+  it('refuse les codes PIN invalides lors de la création d’un identifiant', async () => {
     await expect(createPin('12345')).rejects.toThrow(
       'Le PIN doit contenir exactement six chiffres.',
     )
     expect(await hasPin()).toBe(false)
   })
 
-  it('deletes the local database when resetting access', async () => {
+  it('supprime la base locale lors de la réinitialisation de l’accès', async () => {
     await createPin('123456')
 
     await resetLocalData()

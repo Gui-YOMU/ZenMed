@@ -42,7 +42,7 @@ describe('useMedicationEntries', () => {
     await database.open()
   })
 
-  it('filters to today and shows entries in batches of five', async () => {
+  it('filtre les prises du jour et les affiche par lots de cinq', async () => {
     const today = new Date()
     const todayKey = localDateKey(today)
     const yesterday = new Date(today)
@@ -77,7 +77,7 @@ describe('useMedicationEntries', () => {
     ).toBe(false)
   })
 
-  it('searches matching medication names without filtering the journal list', async () => {
+  it('recherche les médicaments correspondants sans filtrer la liste du journal', async () => {
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
@@ -103,7 +103,7 @@ describe('useMedicationEntries', () => {
     expect(result.current.filteredMedicationNames).toEqual(['Doliprane'])
   })
 
-  it('keeps journal entries and pagination unchanged while searching medication names', async () => {
+  it('conserve les prises et la pagination du journal lors de la recherche de médicaments', async () => {
     const today = new Date()
     const selectedDate = new Date(today)
     selectedDate.setDate(selectedDate.getDate() - 1)

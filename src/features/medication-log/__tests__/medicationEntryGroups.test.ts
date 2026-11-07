@@ -43,7 +43,7 @@ describe('groupMedicationEntriesByDate', () => {
     ])
   })
 
-  it('groups entries by local date while preserving their input order', () => {
+  it('regroupe les prises par date locale tout en conservant leur ordre initial', () => {
     const laterToday = entry(1, localTimestamp(2026, 11, 7, 20))
     const earlierToday = entry(2, localTimestamp(2026, 11, 7, 8))
     const yesterday = entry(3, localTimestamp(2026, 11, 6, 23))
@@ -58,11 +58,11 @@ describe('groupMedicationEntriesByDate', () => {
     expect(groups[1].entries).toEqual([yesterday])
   })
 
-  it('returns no date groups when there are no entries', () => {
+  it('ne renvoie aucun groupe de dates en l’absence de prises', () => {
     expect(groupMedicationEntriesByDate([], todayDateKey)).toEqual([])
   })
 
-  it('uses calendar dates correctly across a month boundary', () => {
+  it('gère correctement les dates du calendrier au passage d’un mois à l’autre', () => {
     const monthEnd = new Date(2026, 11, 1, 10)
 
     const groups = groupMedicationEntriesByDate(

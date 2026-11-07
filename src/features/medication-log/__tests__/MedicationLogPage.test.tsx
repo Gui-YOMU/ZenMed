@@ -22,7 +22,7 @@ describe('MedicationLogPage', () => {
     await database.delete()
   })
 
-  it('shows today by default and updates the heading when another date is selected', async () => {
+  it('affiche le jour courant par défaut et met à jour le titre lorsqu’une autre date est sélectionnée', async () => {
     render(<MedicationLogPage />)
 
     await waitFor(() => {
@@ -51,7 +51,7 @@ describe('MedicationLogPage', () => {
     expect(dateInput).toHaveValue(getDateKey(yesterday))
   })
 
-  it('shows the app identity and keeps date selection, search, and add in their intended areas', async () => {
+  it('affiche l’identité de l’application et place le choix de date, la recherche et l’ajout dans leurs zones prévues', async () => {
     render(<MedicationLogPage onShowStatistics={() => {}} />)
 
     const header = screen.getByRole('banner')
@@ -85,7 +85,7 @@ describe('MedicationLogPage', () => {
     ).toBeTruthy()
   })
 
-  it('shows medication details and the optional reason', async () => {
+  it('affiche les détails du médicament et le motif facultatif', async () => {
     await createMedicationEntry({
       medicationName: 'Doliprane',
       form: 'comprimé',
@@ -107,7 +107,7 @@ describe('MedicationLogPage', () => {
     expect(screen.getByRole('time')).toHaveAttribute('dateTime')
   })
 
-  it('shows actions for only one medication entry at a time', async () => {
+  it('affiche les actions d’une seule prise à la fois', async () => {
     const now = Date.now()
     for (const [index, medicationName] of [
       'Doliprane',
@@ -150,7 +150,7 @@ describe('MedicationLogPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('uses a distinct icon for each galenic form and displays details in two lines', async () => {
+  it('utilise une icône distincte pour chaque forme galénique et affiche les détails sur deux lignes', async () => {
     const now = Date.now()
     for (const [index, form] of (
       ['comprimé', 'gélule', 'sachet/poudre'] as const
@@ -180,7 +180,7 @@ describe('MedicationLogPage', () => {
     expect(screen.queryByText('Motif : Douleur')).not.toBeInTheDocument()
   })
 
-  it('opens the entry form from the plus button beside medication search', async () => {
+  it('ouvre le formulaire de prise avec le bouton plus situé à côté de la recherche', async () => {
     render(<MedicationLogPage onShowStatistics={() => {}} />)
 
     expect(
@@ -194,7 +194,7 @@ describe('MedicationLogPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('paginates entries in groups of five', async () => {
+  it('affiche les prises par pages de cinq', async () => {
     const now = new Date()
     for (let index = 0; index < 6; index += 1) {
       await createMedicationEntry({
@@ -218,7 +218,7 @@ describe('MedicationLogPage', () => {
     expect(screen.queryByRole('button', { name: 'Afficher plus de prises' })).not.toBeInTheDocument()
   })
 
-  it('keeps the journal list intact and opens matching medication statistics', async () => {
+  it('conserve la liste du journal et ouvre les statistiques du médicament correspondant', async () => {
     const now = new Date()
     for (const [medicationName, minutesAgo] of [
       ['Doliprane', 0],
@@ -253,7 +253,7 @@ describe('MedicationLogPage', () => {
     expect(showStatistics).toHaveBeenCalledWith('Doliprane')
   })
 
-  it('shows when no medication matches the statistics search', async () => {
+  it('indique lorsqu’aucun médicament ne correspond à la recherche de statistiques', async () => {
     render(<MedicationLogPage onShowStatistics={() => {}} />)
 
     await waitFor(() => {
@@ -268,7 +268,7 @@ describe('MedicationLogPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('opens a prefilled edit page and updates the existing entry', async () => {
+  it('ouvre une page de modification préremplie et met à jour la prise existante', async () => {
     const takenAt = new Date()
     const localTakenAt = new Date(
       takenAt.getTime() - takenAt.getTimezoneOffset() * 60_000,

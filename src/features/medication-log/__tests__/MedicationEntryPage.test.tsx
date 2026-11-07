@@ -30,7 +30,7 @@ describe('MedicationEntryPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Ajouter une prise' }))
   }
 
-  it('opens the entry form as a separate page and returns to the journal', async () => {
+  it('ouvre le formulaire sur une page distincte et revient au journal', async () => {
     await openEntryPage()
 
     expect(
@@ -48,7 +48,7 @@ describe('MedicationEntryPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('shows the five most recent unique medications and selects one into the form', async () => {
+  it('affiche les cinq médicaments distincts les plus récents et permet d’en choisir un dans le formulaire', async () => {
     const now = Date.now()
     const medicationNames = [
       'Doliprane',
@@ -88,7 +88,7 @@ describe('MedicationEntryPage', () => {
     expect(screen.getByLabelText('Médicament')).toHaveValue('Ibuprofène')
   })
 
-  it('saves a new entry and returns to the journal', async () => {
+  it('enregistre une nouvelle prise et revient au journal', async () => {
     await openEntryPage()
 
     fireEvent.change(screen.getByLabelText('Médicament'), {
@@ -117,7 +117,7 @@ describe('MedicationEntryPage', () => {
     ])
   })
 
-  it('shows a validation message for a zero dose', async () => {
+  it('affiche un message de validation lorsque la dose est nulle', async () => {
     await openEntryPage()
     fireEvent.change(screen.getByLabelText('Médicament'), {
       target: { value: 'Paracétamol' },
@@ -133,7 +133,7 @@ describe('MedicationEntryPage', () => {
     await expect(database.medicationEntries.count()).resolves.toBe(0)
   })
 
-  it('warns about a recent matching medication before saving', async () => {
+  it('signale une prise récente du même médicament avant l’enregistrement', async () => {
     await createMedicationEntry({
       medicationName: 'Doliprane',
       form: 'comprimé',
@@ -176,7 +176,7 @@ describe('MedicationEntryPage', () => {
     })
   })
 
-  it('closes the recent-entry modal with Escape and preserves the form', async () => {
+  it('ferme la modale de prise récente avec Échap et conserve le formulaire', async () => {
     await createMedicationEntry({
       medicationName: 'Doliprane',
       form: 'comprimé',
@@ -204,7 +204,7 @@ describe('MedicationEntryPage', () => {
     expect(await database.medicationEntries.count()).toBe(1)
   })
 
-  it('cancels the recent-entry warning when a field changes', async () => {
+  it('annule l’alerte de prise récente lorsqu’un champ est modifié', async () => {
     await createMedicationEntry({
       medicationName: 'Doliprane',
       form: 'comprimé',

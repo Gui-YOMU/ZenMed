@@ -17,7 +17,7 @@ describe('ZenMed database schema', () => {
     await database.open()
   })
 
-  it('stores medication entries with an auto-incremented ID', async () => {
+  it('enregistre les prises avec un identifiant auto-incrémenté', async () => {
     const id = await database.medicationEntries.add(medicationEntry)
 
     await expect(database.medicationEntries.get(id)).resolves.toEqual({
@@ -26,7 +26,7 @@ describe('ZenMed database schema', () => {
     })
   })
 
-  it('upgrades a version 1 database and preserves its PIN credential', async () => {
+  it('met à niveau une base de version 1 et conserve son identifiant PIN', async () => {
     await database.delete()
     const legacyDatabase = new Dexie('zenmed')
     legacyDatabase.version(1).stores({

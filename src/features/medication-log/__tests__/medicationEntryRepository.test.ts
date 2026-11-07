@@ -22,7 +22,7 @@ describe('medication entry repository', () => {
     await database.open()
   })
 
-  it('creates entries and lists them by actual time, newest first', async () => {
+  it('crée les prises et les classe par heure réelle, de la plus récente à la plus ancienne', async () => {
     const olderId = await createMedicationEntry(firstEntry)
     const newerId = await createMedicationEntry({
       ...firstEntry,
@@ -36,14 +36,14 @@ describe('medication entry repository', () => {
     expect(entries[0].medicationName).toBe('Ibuprofène')
   })
 
-  it('validates an entry before adding it', async () => {
+  it('valide une prise avant de l’ajouter', async () => {
     await expect(
       createMedicationEntry({ ...firstEntry, dose: 0 }),
     ).rejects.toThrow()
     await expect(database.medicationEntries.count()).resolves.toBe(0)
   })
 
-  it('updates an existing entry without changing its ID', async () => {
+  it('modifie une prise existante sans changer son identifiant', async () => {
     const id = await createMedicationEntry(firstEntry)
 
     await updateMedicationEntry(id, {
@@ -60,13 +60,13 @@ describe('medication entry repository', () => {
     })
   })
 
-  it('fails explicitly when updating an entry that does not exist', async () => {
+  it('signale explicitement la modification d’une prise inexistante', async () => {
     await expect(updateMedicationEntry(42, firstEntry)).rejects.toThrow(
       'Impossible de modifier la prise 42 : elle n’existe pas.',
     )
   })
 
-  it('deletes an existing entry and reports when the ID is absent', async () => {
+  it('supprime une prise existante et signale lorsque son identifiant est absent', async () => {
     const id = await createMedicationEntry(firstEntry)
 
     await expect(deleteMedicationEntry(id)).resolves.toBe(true)

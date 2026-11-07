@@ -24,7 +24,7 @@ describe('AccessPage', () => {
     await database.delete()
   })
 
-  it('creates a PIN only after the confirmation matches', async () => {
+  it('crée un code PIN uniquement après confirmation correspondante', async () => {
     render(<AccessPage />)
 
     await screen.findByText('Choisissez un code PIN à 6 chiffres')
@@ -50,7 +50,7 @@ describe('AccessPage', () => {
     expect(await hasPin()).toBe(true)
   })
 
-  it('rejects an incorrect PIN and unlocks with the saved PIN', async () => {
+  it('refuse un code PIN incorrect et déverrouille avec le code enregistré', async () => {
     await createPin('123456')
     render(<AccessPage />)
 
@@ -66,7 +66,7 @@ describe('AccessPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('removes the last entered digit with the backspace key', async () => {
+  it('supprime le dernier chiffre saisi avec la touche de retour arrière', async () => {
     render(<AccessPage />)
     await screen.findByText('Choisissez un code PIN à 6 chiffres')
 
@@ -78,7 +78,7 @@ describe('AccessPage', () => {
       .toBeInTheDocument()
   })
 
-  it('relocks the page after the document is hidden', async () => {
+  it('verrouille de nouveau la page lorsque le document est masqué', async () => {
     await createPin('123456')
     render(
       <AccessPage>
@@ -101,7 +101,7 @@ describe('AccessPage', () => {
     expect(screen.queryByText('Journal des prises')).not.toBeInTheDocument()
   })
 
-  it('requires confirmation before resetting all local data', async () => {
+  it('demande confirmation avant de réinitialiser toutes les données locales', async () => {
     await createPin('123456')
     const confirmSpy = vi.spyOn(window, 'confirm')
     render(<AccessPage />)
