@@ -24,6 +24,7 @@ function entry(id: number, takenAt: string): MedicationEntryRecord {
 
 describe('groupMedicationEntriesByDate', () => {
   const now = new Date(2026, 10, 7, 12)
+  const todayDateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   it('labels today, yesterday, and earlier dates in French', () => {
     const groups = groupMedicationEntriesByDate(
@@ -32,7 +33,7 @@ describe('groupMedicationEntriesByDate', () => {
         entry(2, localTimestamp(2026, 11, 6, 18)),
         entry(3, localTimestamp(2026, 11, 5, 9)),
       ],
-      now,
+      todayDateKey,
     )
 
     expect(groups.map(({ label }) => label)).toEqual([
@@ -49,7 +50,7 @@ describe('groupMedicationEntriesByDate', () => {
 
     const groups = groupMedicationEntriesByDate(
       [laterToday, earlierToday, yesterday],
-      now,
+      todayDateKey,
     )
 
     expect(groups).toHaveLength(2)
@@ -58,7 +59,7 @@ describe('groupMedicationEntriesByDate', () => {
   })
 
   it('returns no date groups when there are no entries', () => {
-    expect(groupMedicationEntriesByDate([], now)).toEqual([])
+    expect(groupMedicationEntriesByDate([], todayDateKey)).toEqual([])
   })
 
   it('uses calendar dates correctly across a month boundary', () => {
@@ -66,7 +67,7 @@ describe('groupMedicationEntriesByDate', () => {
 
     const groups = groupMedicationEntriesByDate(
       [entry(1, localTimestamp(2026, 11, 30, 20))],
-      monthEnd,
+      `${monthEnd.getFullYear()}-${String(monthEnd.getMonth() + 1).padStart(2, '0')}-${String(monthEnd.getDate()).padStart(2, '0')}`,
     )
 
     expect(groups[0].label).toBe('Hier')

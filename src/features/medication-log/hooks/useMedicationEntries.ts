@@ -17,7 +17,8 @@ function getTodayDateKey(): string {
 
 export function useMedicationEntries() {
   const [entries, setEntries] = useState<MedicationEntryRecord[]>([])
-  const [selectedDate, setSelectedDate] = useState(getTodayDateKey)
+  const [todayDateKey] = useState(getTodayDateKey)
+  const [selectedDate, setSelectedDate] = useState(todayDateKey)
   const [searchQuery, setSearchQuery] = useState('')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [isLoading, setIsLoading] = useState(true)
@@ -103,6 +104,7 @@ export function useMedicationEntries() {
 
   return {
     entries: visibleEntries,
+    todayDateKey,
     selectedDate,
     searchQuery,
     isLoading,
