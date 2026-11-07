@@ -36,7 +36,7 @@ describe('useMedicationLogPageViewModel', () => {
     await database.open()
   })
 
-  it('exposes the formatted date and groups today’s entries', async () => {
+  it('expose la date formatée et regroupe les prises du jour', async () => {
     const today = new Date()
     await addEntry('Doliprane', localTimestamp(today, 10))
     await addEntry('Ibuprofène', localTimestamp(today, 9))
@@ -57,7 +57,7 @@ describe('useMedicationLogPageViewModel', () => {
     )).toEqual(['Doliprane', 'Ibuprofène'])
   })
 
-  it('updates the displayed date and groups when another date is selected', async () => {
+  it('met à jour la date affichée et les groupes lorsqu’une autre date est sélectionnée', async () => {
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
@@ -81,7 +81,7 @@ describe('useMedicationLogPageViewModel', () => {
     )
   })
 
-  it('passes medication search, pagination, and refresh actions through the view model', async () => {
+  it('transmet la recherche de médicaments, la pagination et l’actualisation via le view model', async () => {
     const today = new Date()
 
     for (let hour = 0; hour < 6; hour += 1) {

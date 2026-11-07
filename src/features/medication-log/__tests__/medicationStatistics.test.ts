@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { getMedicationStatistics } from '../model/medicationStatistics'
 
 describe('getMedicationStatistics', () => {
-  it('counts selected medication entries within rolling periods', () => {
+  it('compte les prises du médicament sélectionné sur des périodes glissantes', () => {
     const now = new Date('2026-11-07T12:00:00')
     const entries = [
       {
@@ -49,7 +49,7 @@ describe('getMedicationStatistics', () => {
     ])
   })
 
-  it('includes an entry exactly at the start of each period', () => {
+  it('inclut une prise située exactement au début de chaque période', () => {
     const now = new Date('2026-11-07T12:00:00')
     const entry = {
       medicationName: 'Doliprane',

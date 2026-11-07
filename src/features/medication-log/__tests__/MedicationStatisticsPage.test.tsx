@@ -21,7 +21,7 @@ describe('MedicationStatisticsPage', () => {
     await database.delete()
   })
 
-  it('shows period counts, paginates recent entries, and returns to the journal', async () => {
+  it('affiche les décomptes par période, pagine les prises récentes et permet de revenir au journal', async () => {
     const now = Date.now()
     for (const [medicationName, daysAgo] of [
       ['Doliprane', 2],
@@ -96,7 +96,7 @@ describe('MedicationStatisticsPage', () => {
     expect(onBack).toHaveBeenCalledOnce()
   })
 
-  it('shows an empty state when no entries exist', async () => {
+  it('affiche un état vide lorsqu’aucune prise n’existe', async () => {
     render(
       <MedicationStatisticsPage initialMedication="" onBack={() => {}} />,
     )

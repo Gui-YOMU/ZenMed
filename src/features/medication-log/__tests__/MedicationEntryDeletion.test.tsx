@@ -28,7 +28,7 @@ describe('Medication entry deletion', () => {
     return screen.findByRole('heading', { name: 'Doliprane · 500 mg' })
   }
 
-  it('keeps the entry when deletion is cancelled', async () => {
+  it('conserve la prise lorsque la suppression est annulée', async () => {
     await renderEntry()
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
 
@@ -48,7 +48,7 @@ describe('Medication entry deletion', () => {
     ).toBeInTheDocument()
   })
 
-  it('deletes the entry and refreshes the journal after confirmation', async () => {
+  it('supprime la prise et actualise le journal après confirmation', async () => {
     await renderEntry()
     vi.spyOn(window, 'confirm').mockReturnValue(true)
 
