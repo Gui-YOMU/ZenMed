@@ -25,27 +25,39 @@ describe('Medication entry deletion', () => {
       takenAt: new Date().toISOString(),
     })
     render(<MedicationLogPage />)
-    return screen.findByRole('heading', { name: 'Doliprane' })
+    return screen.findByRole('heading', { name: 'Doliprane · 500 mg' })
   }
 
   it('keeps the entry when deletion is cancelled', async () => {
     await renderEntry()
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Supprimer' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Actions pour Doliprane' }),
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Supprimer Doliprane' }),
+    )
 
     expect(confirmSpy).toHaveBeenCalledWith(
       'Supprimer la prise de Doliprane ? Cette action est irréversible.',
     )
     expect(await database.medicationEntries.count()).toBe(1)
-    expect(screen.getByRole('heading', { name: 'Doliprane' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Doliprane · 500 mg' }),
+    ).toBeInTheDocument()
   })
 
   it('deletes the entry and refreshes the journal after confirmation', async () => {
     await renderEntry()
     vi.spyOn(window, 'confirm').mockReturnValue(true)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Supprimer' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Actions pour Doliprane' }),
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Supprimer Doliprane' }),
+    )
 
     await waitFor(async () => {
       expect(await database.medicationEntries.count()).toBe(0)
@@ -54,7 +66,7 @@ describe('Medication entry deletion', () => {
       await screen.findByText('Aucune prise enregistrée à cette date.'),
     ).toBeInTheDocument()
     expect(
-      screen.queryByRole('heading', { name: 'Doliprane' }),
+      screen.queryByRole('heading', { name: 'Doliprane · 500 mg' }),
     ).not.toBeInTheDocument()
   })
 
