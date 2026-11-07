@@ -1,0 +1,153 @@
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { createMedicationEntry } from '../data/medicationEntryRepository'
+import { database } from '../../../shared/storage/database'
+import MedicationLogPage from '../pages/MedicationLogPage'
+
+describe('MedicationEntryPage', () => {
+  beforeEach(async () => {
+    await database.delete()
+    await database.open()
+  })
+
+  afterEach(async () => {
+    cleanup()
+    await database.delete()
+  })
+
+  async function openEntryPage() {
+    render(<MedicationLogPage />)
+    await waitFor(() => {
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Ajouter une prise' }))
+  }
+
+  it('opens the entry form as a separate page and returns to the journal', async () => {
+    await openEntryPage()
+
+    expect(
+      screen.getByRole('heading', { name: 'Ajouter une prise' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Médicament')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Mon journal' }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retour au journal' }))
+
+    expect(
+      screen.getByRole('heading', { name: 'Mon journal' }),
+    ).toBeInTheDocument()
+  })
+
+  it('saves a new entry and returns to the journal', async () => {
+    await openEntryPage()
+
+    fireEvent.change(screen.getByLabelText('Médicament'), {
+      target: { value: 'Paracétamol' },
+    })
+    fireEvent.change(screen.getByLabelText('Dose'), {
+      target: { value: '500' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la prise' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Mon journal' }),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Paracétamol' }),
+    ).toBeInTheDocument()
+    await expect(database.medicationEntries.count()).resolves.toBe(1)
+  })
+
+  it('shows a validation message for a zero dose', async () => {
+    await openEntryPage()
+    fireEvent.change(screen.getByLabelText('Médicament'), {
+      target: { value: 'Paracétamol' },
+    })
+    fireEvent.change(screen.getByLabelText('Dose'), {
+      target: { value: '0' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la prise' }))
+
+    expect(
+      await screen.findByRole('alert'),
+    ).toHaveTextContent('La dose doit être supérieure à zéro.')
+    await expect(database.medicationEntries.count()).resolves.toBe(0)
+  })
+
+  it('warns about a recent matching medication before saving', async () => {
+    await createMedicationEntry({
+      medicationName: 'Doliprane',
+      form: 'comprimé',
+      dose: 500,
+      doseUnit: 'mg',
+      takenAt: new Date().toISOString(),
+    })
+    await openEntryPage()
+    fireEvent.change(screen.getByLabelText('Médicament'), {
+      target: { value: 'Doliprane' },
+    })
+    fireEvent.change(screen.getByLabelText('Dose'), {
+      target: { value: '500' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la prise' }))
+
+    expect(
+      await screen.findByText(
+        /Une prise identique est enregistrée dans les quatre dernières heures/,
+      ),
+    ).toBeInTheDocument()
+    expect(await database.medicationEntries.count()).toBe(1)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer quand même' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Mon journal' }),
+    ).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await database.medicationEntries.count()).toBe(2)
+    })
+  })
+
+  it('cancels the recent-entry warning when a field changes', async () => {
+    await createMedicationEntry({
+      medicationName: 'Doliprane',
+      form: 'comprimé',
+      dose: 500,
+      doseUnit: 'mg',
+      takenAt: new Date().toISOString(),
+    })
+    await openEntryPage()
+    fireEvent.change(screen.getByLabelText('Médicament'), {
+      target: { value: 'Doliprane' },
+    })
+    fireEvent.change(screen.getByLabelText('Dose'), {
+      target: { value: '500' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la prise' }))
+    await screen.findByText(
+      /Une prise identique est enregistrée dans les quatre dernières heures/,
+    )
+
+    act(() => {
+      fireEvent.change(screen.getByLabelText('Médicament'), {
+        target: { value: 'Ibuprofène' },
+      })
+    })
+
+    expect(
+      screen.queryByText(
+        /Une prise identique est enregistrée dans les quatre dernières heures/,
+      ),
+    ).not.toBeInTheDocument()
+  })
+})
