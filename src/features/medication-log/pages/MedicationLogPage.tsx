@@ -1,6 +1,10 @@
+import { useState } from 'react'
+import MedicationEntryPage from './MedicationEntryPage'
 import { useMedicationLogPageViewModel } from '../hooks/useMedicationLogPageViewModel'
+import { getMedicationDateKey } from '../model/medicationEntryDates'
 
 function MedicationLogPage() {
+  const [isAddingEntry, setIsAddingEntry] = useState(false)
   const {
     errorMessage,
     groups,
@@ -17,6 +21,20 @@ function MedicationLogPage() {
   } = useMedicationLogPageViewModel()
   const hasEntries = groups.length > 0
 
+  if (isAddingEntry) {
+    return (
+      <MedicationEntryPage
+        onCancel={() => setIsAddingEntry(false)}
+        onSaved={async (entry) => {
+          selectDate(getMedicationDateKey(new Date(entry.takenAt)))
+          search('')
+          await refresh()
+          setIsAddingEntry(false)
+        }}
+      />
+    )
+  }
+
   return (
     <main className="min-h-svh bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white">
@@ -27,6 +45,13 @@ function MedicationLogPage() {
               Mon journal
             </h1>
           </div>
+          <button
+            className="min-h-11 self-start rounded-lg bg-zenmed-blue px-4 py-2 font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zenmed-blue"
+            onClick={() => setIsAddingEntry(true)}
+            type="button"
+          >
+            Ajouter une prise
+          </button>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
