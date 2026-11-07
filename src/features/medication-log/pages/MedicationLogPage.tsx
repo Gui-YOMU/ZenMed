@@ -15,6 +15,7 @@ function MedicationLogPage() {
     isLoading,
     hasMore,
     loadMore,
+    removeEntry,
     refresh,
     search,
     searchQuery,
@@ -161,13 +162,27 @@ function MedicationLogPage() {
                         </p>
                       ) : null}
                       {entry.id !== undefined ? (
-                        <div className="mt-3 border-t border-slate-100 pt-3 text-right">
+                        <div className="mt-3 flex justify-end gap-2 border-t border-slate-100 pt-3">
                           <button
                             className="min-h-10 rounded-lg px-3 font-medium text-zenmed-blue hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zenmed-blue"
                             onClick={() => setEditingEntry(entry)}
                             type="button"
                           >
                             Modifier
+                          </button>
+                          <button
+                            className="min-h-10 rounded-lg px-3 font-medium text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
+                            onClick={() => {
+                              const confirmed = window.confirm(
+                                `Supprimer la prise de ${entry.medicationName} ? Cette action est irréversible.`,
+                              )
+                              if (confirmed && entry.id !== undefined) {
+                                void removeEntry(entry.id)
+                              }
+                            }}
+                            type="button"
+                          >
+                            Supprimer
                           </button>
                         </div>
                       ) : null}

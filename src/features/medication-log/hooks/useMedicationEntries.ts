@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { listMedicationEntries } from '../data/medicationEntryRepository'
+import {
+  deleteMedicationEntry,
+  listMedicationEntries,
+} from '../data/medicationEntryRepository'
 import type { MedicationEntryRecord } from '../model/medicationEntry.types'
 
 const PAGE_SIZE = 5
@@ -66,6 +69,28 @@ export function useMedicationEntries() {
     }
   }, [])
 
+  const removeEntry = useCallback(
+    async (entryId: number) => {
+      try {
+        const deleted = await deleteMedicationEntry(entryId)
+
+        if (!deleted) {
+          setErrorMessage(
+            `Impossible de supprimer la prise ${entryId} : elle n’existe pas.`,
+          )
+          return false
+        }
+
+        await refresh()
+        return true
+      } catch {
+        setErrorMessage('Impossible de supprimer cette prise.')
+        return false
+      }
+    },
+    [refresh],
+  )
+
   const filteredEntries = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLocaleLowerCase('fr-FR')
 
@@ -113,6 +138,7 @@ export function useMedicationEntries() {
     selectDate,
     search,
     loadMore,
+    removeEntry,
     refresh,
   }
 }

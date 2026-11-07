@@ -24,5 +24,6 @@ export function useMedicationLogPageViewModel() {
     groups,
     selectedDateHeading,
     selectedDateText,
+    removeEntry: medicationEntries.removeEntry,
   }
 }
