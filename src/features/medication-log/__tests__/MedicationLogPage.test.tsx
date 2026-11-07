@@ -126,4 +126,50 @@ describe('MedicationLogPage', () => {
       screen.getByText('Aucune prise ne correspond à cette recherche pour cette date.'),
     ).toBeInTheDocument()
   })
+
+  it('opens a prefilled edit page and updates the existing entry', async () => {
+    const id = await createMedicationEntry({
+      medicationName: 'Doliprane',
+      form: 'comprimé',
+      dose: 500,
+      doseUnit: 'mg',
+      takenAt: new Date().toISOString(),
+      reason: 'Maux de tête',
+    })
+    render(<MedicationLogPage />)
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Modifier' }),
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Modifier une prise' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Médicament')).toHaveValue('Doliprane')
+    expect(screen.getByLabelText('Dose')).toHaveValue(500)
+    expect(screen.getByLabelText('Motif (facultatif)')).toHaveValue('Maux de tête')
+
+    fireEvent.change(screen.getByLabelText('Médicament'), {
+      target: { value: 'Paracétamol' },
+    })
+    fireEvent.change(screen.getByLabelText('Dose'), {
+      target: { value: '1000' },
+    })
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Enregistrer les modifications' }),
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'Mon journal' }),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Paracétamol' }),
+    ).toBeInTheDocument()
+    expect(await database.medicationEntries.count()).toBe(1)
+    expect(await database.medicationEntries.get(id)).toMatchObject({
+      id,
+      medicationName: 'Paracétamol',
+      dose: 1000,
+    })
+  })
 })
