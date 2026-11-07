@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, type FieldPath } from 'react-hook-form'
 import {
   createMedicationEntry,
@@ -99,10 +99,59 @@ export function useMedicationEntryPageViewModel({
     handleSubmit,
     register,
     setError,
+    setValue,
     formState: { errors },
   } = useForm<MedicationEntryFormValues>({
     defaultValues,
   })
+  const [recentMedicationNames, setRecentMedicationNames] = useState<string[]>([])
+  const [recentMedicationError, setRecentMedicationError] = useState<
+    string | null
+  >(null)
+
+  useEffect(() => {
+    let isCurrent = true
+
+    const loadRecentMedicationNames = async () => {
+      try {
+        const entries = await listMedicationEntries()
+        const seenNames = new Set<string>()
+        const names: string[] = []
+
+        for (const existingEntry of entries) {
+          const normalizedName = existingEntry.medicationName
+            .trim()
+            .toLocaleLowerCase('fr-FR')
+
+          if (!seenNames.has(normalizedName)) {
+            seenNames.add(normalizedName)
+            names.push(existingEntry.medicationName)
+          }
+
+          if (names.length === 5) {
+            break
+          }
+        }
+
+        if (isCurrent) {
+          setRecentMedicationNames(names)
+          setRecentMedicationError(null)
+        }
+      } catch {
+        if (isCurrent) {
+          setRecentMedicationError(
+            'Impossible de charger les médicaments récemment saisis.',
+          )
+        }
+      }
+    }
+
+    void loadRecentMedicationNames()
+    return () => {
+      isCurrent = false
+    }
+  }, [])
+
   const registerField = (name: FieldPath<MedicationEntryFormValues>) =>
     register(name, {
       onChange: () => {
@@ -110,6 +159,14 @@ export function useMedicationEntryPageViewModel({
         clearErrors('root')
       },
     })
+  const selectRecentMedication = (medicationName: string) => {
+    setPendingEntry(null)
+    clearErrors('root')
+    setValue('medicationName', medicationName, {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+  }
 
   const saveEntry = async (
     entry: MedicationEntry,
@@ -193,6 +250,8 @@ export function useMedicationEntryPageViewModel({
     handleSubmit: handleSubmit(submitEntry),
     validationMessage: errors.root?.validation?.message,
     submitError: errors.root?.submit?.message,
+    recentMedicationNames,
+    recentMedicationError,
     pendingEntry,
     isSaving,
     onCancel,
@@ -200,6 +259,7 @@ export function useMedicationEntryPageViewModel({
     submitLabel: existingEntry
       ? 'Enregistrer les modifications'
       : 'Enregistrer la prise',
+    selectRecentMedication,
     confirmSave,
     cancelPendingSave,
   }

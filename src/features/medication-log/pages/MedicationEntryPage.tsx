@@ -22,12 +22,15 @@ function MedicationEntryPage({
     register,
     validationMessage,
     submitError,
+    recentMedicationNames,
+    recentMedicationError,
     pendingEntry,
     isSaving,
     pageTitle,
     submitLabel,
     onCancel: handleCancel,
     handleSubmit,
+    selectRecentMedication,
     confirmSave,
     cancelPendingSave,
   } = useMedicationEntryPageViewModel({
@@ -68,6 +71,29 @@ function MedicationEntryPage({
               required
             />
           </label>
+          {recentMedicationError ? (
+            <p className="text-sm text-red-700" role="alert">
+              {recentMedicationError}
+            </p>
+          ) : recentMedicationNames.length > 0 ? (
+            <div aria-label="Médicaments récents">
+              <p className="mb-2 text-sm font-medium text-slate-700">
+                Récemment saisis
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {recentMedicationNames.map((medicationName) => (
+                  <button
+                    className="min-h-10 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-zenmed-blue hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zenmed-blue"
+                    key={medicationName.toLocaleLowerCase('fr-FR')}
+                    onClick={() => selectRecentMedication(medicationName)}
+                    type="button"
+                  >
+                    {medicationName}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
