@@ -80,10 +80,14 @@ describe('AccessPage', () => {
 
   it('relocks the page after the document is hidden', async () => {
     await createPin('123456')
-    render(<AccessPage />)
+    render(
+      <AccessPage>
+        <p>Journal des prises</p>
+      </AccessPage>,
+    )
     await screen.findByText('Saisissez votre code PIN')
     enterPin('123456')
-    await screen.findByText('Accès déverrouillé')
+    expect(await screen.findByText('Journal des prises')).toBeInTheDocument()
 
     Object.defineProperty(document, 'visibilityState', {
       configurable: true,
@@ -94,6 +98,7 @@ describe('AccessPage', () => {
     })
 
     expect(await screen.findByText('Saisissez votre code PIN')).toBeInTheDocument()
+    expect(screen.queryByText('Journal des prises')).not.toBeInTheDocument()
   })
 
   it('requires confirmation before resetting all local data', async () => {

@@ -1,7 +1,8 @@
+import type { ReactNode } from 'react'
 import PinEntry from '../components/PinEntry'
 import { useAccessPageViewModel } from '../hooks/useAccessPageViewModel'
 
-function AccessPage() {
+function AccessPage({ children }: { children?: ReactNode }) {
   const {
     status,
     isBusy,
@@ -16,6 +17,10 @@ function AccessPage() {
     handleForgotPin,
     retry,
   } = useAccessPageViewModel()
+
+  if (status === 'unlocked' && children !== undefined) {
+    return <>{children}</>
+  }
 
   return (
     <main className="flex min-h-svh items-center justify-center bg-white px-6 py-10 text-slate-900">
