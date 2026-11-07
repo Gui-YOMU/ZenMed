@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { MedicationEntryRecord } from '../model/medicationEntry.types'
+import type { MedicationEntryRecord } from '../model/medicationEntry'
 import { groupMedicationEntriesByDate } from '../model/medicationEntryGroups'
 
 function localTimestamp(

@@ -36,7 +36,7 @@ describe('useMedicationLogPageViewModel', () => {
     await database.open()
   })
 
-  it('exposes today heading, formatted date, and grouped entries', async () => {
+  it('exposes the formatted date and groups today’s entries', async () => {
     const today = new Date()
     await addEntry('Doliprane', localTimestamp(today, 10))
     await addEntry('Ibuprofène', localTimestamp(today, 9))
@@ -47,7 +47,6 @@ describe('useMedicationLogPageViewModel', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.selectedDateHeading).toBe('Aujourd’hui')
     expect(result.current.selectedDateText).toBe(
       new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(today),
     )
@@ -58,7 +57,7 @@ describe('useMedicationLogPageViewModel', () => {
     )).toEqual(['Doliprane', 'Ibuprofène'])
   })
 
-  it('updates heading and groups when another date is selected', async () => {
+  it('updates the displayed date and groups when another date is selected', async () => {
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
@@ -73,7 +72,9 @@ describe('useMedicationLogPageViewModel', () => {
 
     act(() => result.current.selectDate(getDateKey(yesterday)))
 
-    expect(result.current.selectedDateHeading).toBe('Hier')
+    expect(result.current.selectedDateText).toBe(
+      new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(yesterday),
+    )
     expect(result.current.groups).toHaveLength(1)
     expect(result.current.groups[0].entries[0].medicationName).toBe(
       'Ibuprofène',

@@ -1,9 +1,9 @@
 import { database } from '../../../shared/storage/database'
+import { medicationEntrySchema } from '../model/medicationEntry'
 import type {
   MedicationEntry,
   MedicationEntryRecord,
-} from '../model/medicationEntry.types'
-import { medicationEntrySchema } from '../model/medicationEntryRules'
+} from '../model/medicationEntry'
 
 export async function createMedicationEntry(
   entry: MedicationEntry,

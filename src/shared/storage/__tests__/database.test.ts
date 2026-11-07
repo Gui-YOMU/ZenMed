@@ -1,6 +1,6 @@
 import Dexie from 'dexie'
 import { beforeEach, describe, expect, it } from 'vitest'
-import type { MedicationEntry } from '../../../features/medication-log/model/medicationEntry.types'
+import type { MedicationEntry } from '../../../features/medication-log/model/medicationEntry'
 import { database } from '../database'
 
 const medicationEntry: MedicationEntry = {

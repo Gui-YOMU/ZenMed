@@ -1,5 +1,5 @@
 import { Pill } from 'lucide-react'
-import type { GalenicForm } from '../model/medicationEntry.types'
+import type { GalenicForm } from '../model/medicationEntry'
 
 interface GalenicFormIconProps {
   form: GalenicForm

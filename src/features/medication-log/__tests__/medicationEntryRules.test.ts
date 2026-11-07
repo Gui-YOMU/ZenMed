@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
   medicationEntrySchema,
-} from '../model/medicationEntryRules'
+  normalizeMedicationName,
+} from '../model/medicationEntry'
 import {
   DOSE_UNITS,
   GALENIC_FORMS,
   type MedicationEntry,
-} from '../model/medicationEntry.types'
+} from '../model/medicationEntry'
 
 const validEntry: MedicationEntry = {
   medicationName: 'Doliprane',
@@ -17,6 +18,10 @@ const validEntry: MedicationEntry = {
 }
 
 describe('medicationEntrySchema', () => {
+  it('normalizes medication names consistently for case-insensitive matching', () => {
+    expect(normalizeMedicationName('  DOLIPRANE ')).toBe('doliprane')
+  })
+
   it('accepts a valid entry and trims the medication name', () => {
     const result = medicationEntrySchema.parse({
       ...validEntry,
