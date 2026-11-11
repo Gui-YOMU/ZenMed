@@ -44,9 +44,11 @@ describe('MedicationLogPage', () => {
       ),
     ).toBeInTheDocument()
 
+    const dateInput = screen.getByLabelText('Choisir une date')
+    expect(dateInput).toHaveValue('')
+
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
-    const dateInput = screen.getByLabelText('Choisir une date')
 
     act(() => {
       fireEvent.change(dateInput, { target: { value: getDateKey(yesterday) } })
