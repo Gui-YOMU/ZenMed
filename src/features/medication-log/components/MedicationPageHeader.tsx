@@ -82,7 +82,7 @@ function MedicationPageHeader({
                 className="absolute inset-0 size-full cursor-pointer opacity-0"
                 onChange={(event) => onDateChange(event.currentTarget.value)}
                 type="date"
-                value={selectedDate}
+                value={selectedDate ?? ''}
               />
             </label>
           </div>
