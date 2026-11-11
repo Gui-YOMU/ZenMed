@@ -37,8 +37,8 @@ function RecentMedicationEntryAlert({
         className="mt-2 text-sm leading-6 text-slate-600"
         id="recent-entry-warning-description"
       >
-        Une prise identique est enregistrée dans les quatre dernières heures.
-        Vérifiez votre saisie avant de continuer.
+        Une prise identique est enregistrée à moins de quatre heures de l’heure
+        saisie. Vérifiez votre saisie avant de continuer.
       </p>
       <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-5 text-amber-950">
         Ce repère se base sur votre historique et ne constitue pas un avis

@@ -14,7 +14,7 @@ const PAGE_SIZE = 5
 export function useMedicationEntries() {
   const [entries, setEntries] = useState<MedicationEntryRecord[]>([])
   const [todayDateKey] = useState(() => getMedicationDateKey(new Date()))
-  const [selectedDate, setSelectedDate] = useState(todayDateKey)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [isLoading, setIsLoading] = useState(true)
@@ -85,6 +85,10 @@ export function useMedicationEntries() {
   )
 
   const filteredEntries = useMemo(() => {
+    if (selectedDate === null) {
+      return entries
+    }
+
     return entries.filter((entry) => {
       const entryDate = getMedicationDateKey(new Date(entry.takenAt))
       return entryDate === selectedDate
@@ -119,8 +123,8 @@ export function useMedicationEntries() {
   const visibleEntries = filteredEntries.slice(0, visibleCount)
   const hasMore = visibleCount < filteredEntries.length
 
-  const selectDate = useCallback((date: string) => {
-    setSelectedDate(date)
+  const selectDate = useCallback((date: string | null) => {
+    setSelectedDate(date || null)
     setVisibleCount(PAGE_SIZE)
   }, [])
 
