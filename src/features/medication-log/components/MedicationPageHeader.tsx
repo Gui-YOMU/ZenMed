@@ -14,8 +14,8 @@ type MedicationPageHeaderProps = MedicationPageHeaderBaseProps &
       }
     | {
         onBack?: never
-        selectedDate: string
-        onDateChange: (date: string) => void
+        selectedDate: string | null
+        onDateChange: (date: string | null) => void
       }
   )
 
@@ -26,7 +26,7 @@ function MedicationPageHeader({
   selectedDate,
   onDateChange,
 }: MedicationPageHeaderProps) {
-  const isJournalHeader = selectedDate !== undefined
+  const isJournalHeader = onDateChange !== undefined
 
   return (
     <header className="border-b border-slate-200 bg-white">
@@ -75,9 +75,11 @@ function MedicationPageHeader({
             <input
               aria-label="Choisir une date"
               className="absolute inset-0 size-full cursor-pointer opacity-0"
-              onChange={(event) => onDateChange(event.currentTarget.value)}
+              onChange={(event) =>
+                onDateChange(event.currentTarget.value || null)
+              }
               type="date"
-              value={selectedDate}
+              value={selectedDate ?? ''}
             />
           </label>
         ) : null}

@@ -11,6 +11,15 @@ function getDateKey(date: Date): string {
   return `${year}-${month}-${day}`
 }
 
+function localTimestamp(date: Date, hour: number): string {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    hour,
+  ).toISOString()
+}
+
 describe('MedicationLogPage', () => {
   beforeEach(async () => {
     await database.delete()
@@ -22,7 +31,7 @@ describe('MedicationLogPage', () => {
     await database.delete()
   })
 
-  it('affiche le jour courant par défaut et met à jour le titre lorsqu’une autre date est sélectionnée', async () => {
+  it('affiche toutes les dates par défaut et filtre le journal lorsqu’une date est sélectionnée', async () => {
     render(<MedicationLogPage />)
 
     await waitFor(() => {
@@ -31,7 +40,7 @@ describe('MedicationLogPage', () => {
 
     expect(
       screen.getByText(
-        new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(new Date()),
+        'Toutes les dates',
       ),
     ).toBeInTheDocument()
 
@@ -194,27 +203,41 @@ describe('MedicationLogPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('affiche les prises par pages de cinq', async () => {
+  it('affiche les cinq prises les plus récentes groupées par date et charge les suivantes par lots de cinq', async () => {
     const now = new Date()
-    for (let index = 0; index < 6; index += 1) {
+    const yesterday = new Date(now)
+    yesterday.setDate(yesterday.getDate() - 1)
+    for (let hour = 7; hour < 10; hour += 1) {
       await createMedicationEntry({
-        medicationName: `Traitement ${index}`,
+        medicationName: `Aujourd’hui ${hour}`,
         form: 'gélule',
         dose: 1,
         doseUnit: 'g',
-        takenAt: new Date(now.getTime() - index * 60_000).toISOString(),
+        takenAt: localTimestamp(now, hour),
+      })
+    }
+    for (let hour = 10; hour < 13; hour += 1) {
+      await createMedicationEntry({
+        medicationName: `Hier ${hour}`,
+        form: 'gélule',
+        dose: 1,
+        doseUnit: 'g',
+        takenAt: localTimestamp(yesterday, hour),
       })
     }
 
     render(<MedicationLogPage />)
 
-    expect(await screen.findByRole('heading', { name: /Traitement 0/ })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /Traitement 4/ })).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: /Traitement 5/ })).not.toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Aujourd’hui 9/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Aujourd’hui 7/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Hier 11/ })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /Hier 10/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Aujourd’hui' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Hier' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Afficher plus de prises' }))
 
-    expect(await screen.findByRole('heading', { name: /Traitement 5/ })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Hier 10/ })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Afficher plus de prises' })).not.toBeInTheDocument()
   })
 

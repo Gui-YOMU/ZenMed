@@ -68,26 +68,27 @@ function getDefaultValues(
   }
 }
 
-function hasRecentMatchingEntry(
+function hasNearbyMatchingEntry(
   medicationName: string,
+  takenAt: string,
   excludedEntryId?: number,
 ): Promise<boolean> {
   const normalizedName = normalizeMedicationName(medicationName)
+  const submittedTakenAt = new Date(takenAt).getTime()
 
   return listMedicationEntries().then((entries) => {
-    const now = Date.now()
-
     return entries.some((existingEntry) => {
       if (existingEntry.id === excludedEntryId) {
         return false
       }
 
-      const elapsedTime = now - new Date(existingEntry.takenAt).getTime()
+      const timeDifference = Math.abs(
+        submittedTakenAt - new Date(existingEntry.takenAt).getTime(),
+      )
       return (
         normalizeMedicationName(existingEntry.medicationName) ===
           normalizedName &&
-        elapsedTime >= 0 &&
-        elapsedTime <= RECENT_ENTRY_WINDOW_MS
+        timeDifference <= RECENT_ENTRY_WINDOW_MS
       )
     })
   })
@@ -185,8 +186,9 @@ export function useMedicationEntryPageViewModel({
     try {
       if (
         !skipRecentEntryCheck &&
-        (await hasRecentMatchingEntry(
+        (await hasNearbyMatchingEntry(
           entry.medicationName,
+          entry.takenAt,
           existingEntry?.id,
         ))
       ) {

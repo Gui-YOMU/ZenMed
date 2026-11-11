@@ -11,8 +11,11 @@ export function useMedicationLogPageViewModel() {
     medicationEntries.entries,
     medicationEntries.todayDateKey,
   )
-  const selectedDate = parseMedicationDateKey(medicationEntries.selectedDate)
-  const selectedDateText = formatMedicationDate(selectedDate)
+  const selectedDateText = medicationEntries.selectedDate
+    ? formatMedicationDate(
+        parseMedicationDateKey(medicationEntries.selectedDate),
+      )
+    : 'Toutes les dates'
 
   return {
     ...medicationEntries,
