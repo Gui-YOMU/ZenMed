@@ -1,8 +1,10 @@
 import { ArrowLeft, CalendarDays } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 interface MedicationPageHeaderBaseProps {
   title: string
   subtitle: string
+  journalAction?: ReactNode
 }
 
 type MedicationPageHeaderProps = MedicationPageHeaderBaseProps &
@@ -22,6 +24,7 @@ type MedicationPageHeaderProps = MedicationPageHeaderBaseProps &
 function MedicationPageHeader({
   title,
   subtitle,
+  journalAction,
   onBack,
   selectedDate,
   onDateChange,
@@ -69,19 +72,20 @@ function MedicationPageHeader({
           </div>
         </div>
         {isJournalHeader ? (
-          <label className="relative flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-zenmed-blue transition-colors hover:bg-blue-50 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-zenmed-blue">
-            <span className="sr-only">Choisir une date</span>
-            <CalendarDays aria-hidden="true" size={22} />
-            <input
-              aria-label="Choisir une date"
-              className="absolute inset-0 size-full cursor-pointer opacity-0"
-              onChange={(event) =>
-                onDateChange(event.currentTarget.value || null)
-              }
-              type="date"
-              value={selectedDate ?? ''}
-            />
-          </label>
+          <div className="flex shrink-0 items-center gap-2">
+            {journalAction}
+            <label className="relative flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-zenmed-blue transition-colors hover:bg-blue-50 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-zenmed-blue">
+              <span className="sr-only">Choisir une date</span>
+              <CalendarDays aria-hidden="true" size={22} />
+              <input
+                aria-label="Choisir une date"
+                className="absolute inset-0 size-full cursor-pointer opacity-0"
+                onChange={(event) => onDateChange(event.currentTarget.value)}
+                type="date"
+                value={selectedDate}
+              />
+            </label>
+          </div>
         ) : null}
       </div>
     </header>
