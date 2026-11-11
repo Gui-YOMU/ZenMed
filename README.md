@@ -42,3 +42,12 @@ Pour activer le déploiement :
 L’application sera disponible à l’adresse
 `https://gui-yomu.github.io/ZenMed/`. Les prises sont stockées localement dans
 le navigateur du téléphone et ne sont pas synchronisées entre appareils.
+
+## Mettre à jour l’application
+
+L’application vérifie automatiquement si une nouvelle version est disponible
+à son ouverture, puis toutes les heures tant que le journal reste ouvert. Sur le
+journal, le bouton **À jour** reste désactivé tant qu’il n’y a pas de nouvelle
+version. Lorsqu’une mise à jour est prête, le bouton **Mettre à jour** devient
+actif. Après confirmation, l’application se recharge pour installer la version;
+les prises enregistrées restent conservées.

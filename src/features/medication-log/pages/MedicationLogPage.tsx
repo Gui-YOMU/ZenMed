@@ -4,6 +4,7 @@ import MedicationEntryPage from './MedicationEntryPage'
 import MedicationEntryGroups from '../components/MedicationEntryGroups'
 import MedicationLogFooter from '../components/MedicationLogFooter'
 import MedicationPageHeader from '../components/MedicationPageHeader'
+import AppUpdateControl from '../components/AppUpdateControl'
 import { useMedicationLogPageViewModel } from '../hooks/useMedicationLogPageViewModel'
 import { getMedicationDateKey } from '../model/medicationEntryDates'
 import {
@@ -67,6 +68,7 @@ function MedicationLogPage({
       <MedicationPageHeader
         title="Mon journal ZenMed"
         subtitle={selectedDateText}
+        journalAction={<AppUpdateControl />}
         selectedDate={selectedDate}
         onDateChange={selectDate}
       />
