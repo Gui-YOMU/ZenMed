@@ -30,6 +30,13 @@ describe('MedicationEntryPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Ajouter une prise' }))
   }
 
+  function localDateKey(date: Date): string {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   it('ouvre le formulaire sur une page distincte et revient au journal', async () => {
     await openEntryPage()
 
@@ -161,7 +168,7 @@ describe('MedicationEntryPage', () => {
     ).toBeInTheDocument()
     expect(
       await screen.findByText(
-        /Une prise identique est enregistrée dans les quatre dernières heures/,
+        /Une prise identique est enregistrée à moins de quatre heures de l’heure saisie/,
       ),
     ).toBeInTheDocument()
     expect(await database.medicationEntries.count()).toBe(1)
@@ -171,6 +178,47 @@ describe('MedicationEntryPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Mon journal ZenMed' }),
     ).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await database.medicationEntries.count()).toBe(2)
+    })
+  })
+
+  it('signale une prise proche de l’heure saisie même si elle est enregistrée plusieurs jours plus tard', async () => {
+    const takenDate = new Date()
+    takenDate.setDate(takenDate.getDate() - 2)
+    takenDate.setHours(11, 0, 0, 0)
+    await createMedicationEntry({
+      medicationName: 'Doliprane',
+      form: 'comprimé',
+      dose: 500,
+      doseUnit: 'mg',
+      takenAt: takenDate.toISOString(),
+    })
+
+    await openEntryPage()
+    fireEvent.change(screen.getByLabelText('Médicament'), {
+      target: { value: 'Doliprane' },
+    })
+    fireEvent.change(screen.getByLabelText('Dose'), {
+      target: { value: '500' },
+    })
+    fireEvent.change(screen.getByLabelText('Date'), {
+      target: { value: localDateKey(takenDate) },
+    })
+    fireEvent.change(screen.getByLabelText('Heure'), {
+      target: { value: '13:00' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la prise' }))
+
+    expect(
+      await screen.findByRole('alertdialog', {
+        name: 'Prise récente du même traitement',
+      }),
+    ).toBeInTheDocument()
+    expect(await database.medicationEntries.count()).toBe(1)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer quand même' }))
+
     await waitFor(async () => {
       expect(await database.medicationEntries.count()).toBe(2)
     })
@@ -221,7 +269,7 @@ describe('MedicationEntryPage', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la prise' }))
     await screen.findByText(
-      /Une prise identique est enregistrée dans les quatre dernières heures/,
+      /Une prise identique est enregistrée à moins de quatre heures de l’heure saisie/,
     )
 
     act(() => {
@@ -232,7 +280,7 @@ describe('MedicationEntryPage', () => {
 
     expect(
       screen.queryByText(
-        /Une prise identique est enregistrée dans les quatre dernières heures/,
+        /Une prise identique est enregistrée à moins de quatre heures de l’heure saisie/,
       ),
     ).not.toBeInTheDocument()
   })

@@ -42,20 +42,21 @@ describe('useMedicationEntries', () => {
     await database.open()
   })
 
-  it('filtre les prises du jour et les affiche par lots de cinq', async () => {
+  it('affiche les cinq prises les plus récentes toutes dates confondues', async () => {
     const today = new Date()
-    const todayKey = localDateKey(today)
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
 
-    for (let hour = 0; hour < 6; hour += 1) {
+    for (let hour = 7; hour < 10; hour += 1) {
       await createMedicationEntry(
         makeEntry(`Traitement ${hour}`, atLocalTime(today, hour)),
       )
     }
-    await createMedicationEntry(
-      makeEntry('Hier', atLocalTime(yesterday, 12)),
-    )
+    for (let hour = 10; hour < 13; hour += 1) {
+      await createMedicationEntry(
+        makeEntry(`Hier ${hour}`, atLocalTime(yesterday, hour)),
+      )
+    }
 
     const { result } = renderHook(() => useMedicationEntries())
 
@@ -63,18 +64,22 @@ describe('useMedicationEntries', () => {
       expect(result.current.isLoading).toBe(false)
     })
 
-    expect(result.current.selectedDate).toBe(todayKey)
+    expect(result.current.selectedDate).toBeNull()
     expect(result.current.entries).toHaveLength(5)
-    expect(result.current.entries[0].medicationName).toBe('Traitement 5')
+    expect(result.current.entries.map((entry) => entry.medicationName)).toEqual([
+      'Traitement 9',
+      'Traitement 8',
+      'Traitement 7',
+      'Hier 12',
+      'Hier 11',
+    ])
     expect(result.current.hasMore).toBe(true)
 
     act(() => result.current.loadMore())
 
     expect(result.current.entries).toHaveLength(6)
     expect(result.current.hasMore).toBe(false)
-    expect(
-      result.current.entries.some((entry) => entry.medicationName === 'Hier'),
-    ).toBe(false)
+    expect(result.current.entries[5].medicationName).toBe('Hier 10')
   })
 
   it('recherche les médicaments correspondants sans filtrer la liste du journal', async () => {
@@ -99,7 +104,7 @@ describe('useMedicationEntries', () => {
 
     act(() => result.current.search('DOLI'))
 
-    expect(result.current.entries).toHaveLength(2)
+    expect(result.current.entries).toHaveLength(3)
     expect(result.current.filteredMedicationNames).toEqual(['Doliprane'])
   })
 

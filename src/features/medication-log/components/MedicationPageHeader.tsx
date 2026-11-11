@@ -16,8 +16,8 @@ type MedicationPageHeaderProps = MedicationPageHeaderBaseProps &
       }
     | {
         onBack?: never
-        selectedDate: string
-        onDateChange: (date: string) => void
+        selectedDate: string | null
+        onDateChange: (date: string | null) => void
       }
   )
 
@@ -29,7 +29,7 @@ function MedicationPageHeader({
   selectedDate,
   onDateChange,
 }: MedicationPageHeaderProps) {
-  const isJournalHeader = selectedDate !== undefined
+  const isJournalHeader = onDateChange !== undefined
 
   return (
     <header className="border-b border-slate-200 bg-white">
